@@ -85,3 +85,11 @@ export const useMealStatus = (day: string, slot: MealSlot) =>
       unwrap(api.GET("/api/v1/meal-services/{day}/{meal_slot}/status", { params: { path: { day, meal_slot: slot } } })),
     ...LIVE,
   });
+
+/** Inputs already recorded on a batch (lots and intermediate batches), straight from the server. */
+export const useBatchInputs = (batchId: string) =>
+  useQuery({
+    queryKey: ["batch-inputs", batchId],
+    queryFn: () => unwrap(api.GET("/api/v1/batches/{batch_id}/inputs", { params: { path: { batch_id: batchId } } })),
+    staleTime: 2_000,
+  });

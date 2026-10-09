@@ -3,7 +3,7 @@
 import type { Batch, Dish } from "@metrace/api-client";
 import { useState } from "react";
 import { useAddBatchInput } from "../../api/mutations";
-import { useLots } from "../../api/read-queries";
+import { useBatchInputs, useLots } from "../../api/read-queries";
 import { QueryBoundary } from "../../components/query-boundary";
 import { Button, Field, inputClass } from "../../components/ui-primitives";
 import { ViolationBanner } from "../../components/violation-banner";
@@ -17,12 +17,12 @@ export function AddBatchInputPanel(props: { batch: Batch; finishedBatches: Batch
   const { batch } = props;
   const lots = useLots();
   const add = useAddBatchInput();
+  const recorded = useBatchInputs(batch.id);
   const [source, setSource] = useState<Source>("lot");
   const [lotId, setLotId] = useState("");
   const [inputBatchId, setInputBatchId] = useState("");
   const [qty, setQty] = useState("");
   const [localError, setLocalError] = useState<string>();
-  const [added, setAdded] = useState<string[]>([]);
 
   function submit() {
     const qtyKg = parseDecimal(qty);
@@ -37,11 +37,6 @@ export function AddBatchInputPanel(props: { batch: Batch; finishedBatches: Batch
       },
       {
         onSuccess: () => {
-          const label =
-            source === "lot"
-              ? (lots.data?.find((l) => l.id === chosen)?.lot_code ?? "lô")
-              : (props.finishedBatches.find((b) => b.id === chosen)?.batch_code ?? "mẻ");
-          setAdded((prev) => [...prev, `${label}: ${qtyKg} kg`]);
           setLotId("");
           setInputBatchId("");
           setQty("");
@@ -89,7 +84,18 @@ export function AddBatchInputPanel(props: { batch: Batch; finishedBatches: Batch
         </Button>
       </div>
       {localError && <p role="alert" className="text-lg font-semibold text-red-800">{localError}</p>}
-      {added.length > 0 && <p role="status" className="text-lg text-green-800">Đã ghi: {added.join("; ")}</p>}
+      {recorded.data && recorded.data.length > 0 && (
+        <div role="status">
+          <p className="text-base font-semibold text-slate-700">Đã ghi trong mẻ này:</p>
+          <ul className="list-inside list-disc text-lg text-green-900">
+            {recorded.data.map((i) => (
+              <li key={i.id}>
+                {i.label}: {i.qty_kg} kg <span className="text-base text-slate-600">({i.added_by})</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <ViolationBanner error={add.error} />
     </div>
   );

@@ -590,6 +590,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/portal/delivery-points": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List My Points */
+        get: operations["list_my_points_api_v1_portal_delivery_points_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/portal/deliveries": {
         parameters: {
             query?: never;
@@ -755,6 +772,57 @@ export interface paths {
         get: operations["verify_api_v1_audit_verify_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/incidents/{incident_id}/report-draft": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Request Draft */
+        post: operations["request_draft_api_v1_incidents__incident_id__report_draft_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/incidents/{incident_id}/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Edit Report */
+        put: operations["edit_report_api_v1_incidents__incident_id__report_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/incidents/{incident_id}/report/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve Report */
+        post: operations["approve_report_api_v1_incidents__incident_id__report_approve_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1221,6 +1289,16 @@ export interface components {
             escalated: boolean;
             /** Process Instance Id */
             process_instance_id: string | null;
+            /** Report Draft */
+            report_draft?: string | null;
+            /** Report Model */
+            report_model?: string | null;
+            /** Report Final */
+            report_final?: string | null;
+            /** Report Approved By */
+            report_approved_by?: string | null;
+            /** Report Approved At */
+            report_approved_at?: string | null;
             /**
              * Server Now
              * Format: date-time
@@ -1281,6 +1359,16 @@ export interface components {
             escalated: boolean;
             /** Process Instance Id */
             process_instance_id: string | null;
+            /** Report Draft */
+            report_draft?: string | null;
+            /** Report Model */
+            report_model?: string | null;
+            /** Report Final */
+            report_final?: string | null;
+            /** Report Approved By */
+            report_approved_by?: string | null;
+            /** Report Approved At */
+            report_approved_at?: string | null;
         };
         /** IngredientOut */
         IngredientOut: {
@@ -1586,6 +1674,18 @@ export interface components {
             /** Complaints */
             complaints: components["schemas"]["ComplaintOut"][];
         };
+        /** PortalPointOut */
+        PortalPointOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+        };
         /** PortionCheckIn */
         PortionCheckIn: {
             /**
@@ -1708,6 +1808,11 @@ export interface components {
             received_at: string;
             /** Lots */
             lots: components["schemas"]["LotOut"][];
+        };
+        /** ReportIn */
+        ReportIn: {
+            /** Text */
+            text: string;
         };
         /** SampleIn */
         SampleIn: {
@@ -3136,6 +3241,26 @@ export interface operations {
             };
         };
     };
+    list_my_points_api_v1_portal_delivery_points_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortalPointOut"][];
+                };
+            };
+        };
+    };
     list_deliveries_api_v1_portal_deliveries_get: {
         parameters: {
             query?: {
@@ -3439,6 +3564,103 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["VerifyOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    request_draft_api_v1_incidents__incident_id__report_draft_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                incident_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    edit_report_api_v1_incidents__incident_id__report_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                incident_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReportIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IncidentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    approve_report_api_v1_incidents__incident_id__report_approve_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                incident_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IncidentOut"];
                 };
             };
             /** @description Validation Error */

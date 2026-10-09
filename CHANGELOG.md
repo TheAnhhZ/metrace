@@ -76,6 +76,11 @@ and the project uses [Semantic Versioning](https://semver.org/).
 - #2 recall drill (`POST /api/v1/recall-drills`, `metrace drill run`): trace, lock preview in a
   rolled-back savepoint, portion coverage, recorded in the audit chain.
 
+- Web screens: complaints with cluster suggestions and SLA countdowns, incident board and detail
+  (confirm suspects, affected shipments, four-eyes close, report draft), trace table and graph
+  (Cytoscape.js), cold-chain banner with sparkline, audit verification; mobile-first customer portal
+  (deliveries, complaints with photos, recall notices with acknowledgement and audit anchor).
+
 ### Fixed
 - Receiving and incident codes no longer collide under concurrent requests.
 

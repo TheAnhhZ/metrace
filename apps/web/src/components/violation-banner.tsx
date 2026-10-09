@@ -41,8 +41,11 @@ function GenericError({ error }: { error: unknown }) {
     .filter(Boolean);
   return (
     <div role="alert" className="rounded-xl border-2 border-red-600 bg-red-50 p-4 text-red-900">
-      <h3 className="text-xl font-bold">Không thực hiện được</h3>
-      <p className="mt-1 text-lg">{api ? messageForCode(api.code) : messageForCode("")}</p>
+      <h3 className="text-xl font-bold">{api?.rule ? "Bị chặn - không được tiếp tục" : "Không thực hiện được"}</h3>
+      <p className="mt-1 flex flex-wrap items-center gap-2 text-lg">
+        {api?.rule && <Badge tone="red">{api.rule}</Badge>}
+        <span>{api ? messageForCode(api.code) : messageForCode("")}</span>
+      </p>
       {fields && fields.length > 0 && <p className="mt-1 text-base">Ô cần kiểm tra: {fields.join(", ")}</p>}
       {/* A business-rule validation (no field list) has no code of its own yet: show what the server said. */}
       {api?.code === "VALIDATION_ERROR" && !fields?.length && <p className="mt-1 text-base">Máy chủ báo: {api.message}</p>}

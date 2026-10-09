@@ -29,6 +29,17 @@ describe("role routing", () => {
     expect(canDo(["procurement"], "receive")).toBe(true);
   });
 
+  it("gates the incident, cold-chain and audit actions", () => {
+    expect(canDo(["cskh"], "complaintIntake")).toBe(true);
+    expect(canDo(["cskh"], "openIncident")).toBe(false);
+    expect(canDo(["qa"], "confirmSuspects")).toBe(true);
+    expect(canDo(["qa"], "approveClose")).toBe(false);
+    expect(canDo(["approver"], "approveClose")).toBe(true);
+    expect(canDo(["qa"], "acknowledgeAlert")).toBe(true);
+    expect(canDo(["director"], "viewAudit")).toBe(true);
+    expect(canDo(["chef"], "viewAudit")).toBe(false);
+  });
+
   it("hides Keycloak default roles in the header", () => {
     expect(roleLabelsVi(["default-roles-metrace", "chef", "uma_authorization"])).toEqual(["Bếp trưởng"]);
   });

@@ -7,5 +7,6 @@ export type { ApiClient, ApiClientOptions, TokenProvider } from "./client";
 export { basisLabelVi, describeFindingVi, plainNumber } from "./finding-format-vi";
 export type { FindingViewVi } from "./finding-format-vi";
 export { GENERIC_ERROR_MESSAGE_VI, REASON_CODE_MESSAGES_VI, messageForCode } from "./reason-code-messages-vi";
-export { ACCEPTED_DOCUMENT_TYPES, uploadCompanyFile } from "./upload-file";
+export { ACCEPTED_DOCUMENT_TYPES, uploadCompanyFile, uploadCustomerFile } from "./upload-file";
+export { asShape } from "./types";
 export type * from "./types";

@@ -13,7 +13,15 @@ export type ActionName =
   | "portionCheck"
   | "planShipment"
   | "addShipmentItem"
-  | "dispatch";
+  | "dispatch"
+  | "complaintIntake"
+  | "openIncident"
+  | "confirmSuspects"
+  | "requestClose"
+  | "approveClose"
+  | "editReport"
+  | "acknowledgeAlert"
+  | "viewAudit";
 
 /** Who may do what; mirrors the "Who may do what" table in docs/poka-yoke-rules.md. */
 const ACTION_ROLES: Readonly<Record<ActionName, readonly string[]>> = {
@@ -25,6 +33,14 @@ const ACTION_ROLES: Readonly<Record<ActionName, readonly string[]>> = {
   planShipment: ["chef", "driver"],
   addShipmentItem: ["chef"],
   dispatch: ["chef", "driver"],
+  complaintIntake: ["cskh", "qa"],
+  openIncident: ["qa"],
+  confirmSuspects: ["qa"],
+  requestClose: ["qa"],
+  approveClose: ["approver"],
+  editReport: ["qa"],
+  acknowledgeAlert: ["qa"],
+  viewAudit: ["qa", "director", "approver"],
 };
 
 const ROLE_LABELS_VI: Readonly<Record<string, string>> = {

@@ -1,21 +1,8 @@
 // SPDX-FileCopyrightText: The metrace Authors
 // SPDX-License-Identifier: Apache-2.0
-import { type ApiError, uploadCompanyFile, unwrap } from "@metrace/api-client";
-import type { Schemas } from "@metrace/api-client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { type Schemas, unwrap, uploadCompanyFile } from "@metrace/api-client";
 import { api } from "./api-client-instance";
-
-/**
- * Mutation that refreshes every cached list afterwards: one write (a lot used up, a sample stored,
- * a Mẫu 3 recorded) changes several screens at once, and the data is small.
- */
-function useWrite<TVars, TData>(run: (vars: TVars) => Promise<TData>) {
-  const queryClient = useQueryClient();
-  return useMutation<TData, ApiError, TVars>({
-    mutationFn: run,
-    onSuccess: () => queryClient.invalidateQueries(),
-  });
-}
+import { useWrite } from "./use-write";
 
 export const useUploadDocument = () => useWrite((file: File) => uploadCompanyFile(api, file));
 
