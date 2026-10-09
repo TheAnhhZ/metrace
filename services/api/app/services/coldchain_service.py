@@ -7,9 +7,9 @@ worker, via the outbox, to start the `cold-chain-alert` process.
 """
 
 import uuid
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
@@ -21,13 +21,13 @@ from app.core.principal import Principal
 from app.core.reason_codes import ReasonCode
 from app.models.coldchain import AlertStatus, ColdChainAlert, SensorReading
 from app.models.cooking import RetainedSample
-from app.models.enums import SampleStatus
+from app.models.enums import LotStatus, SampleStatus
 from app.models.kitchen_and_customers import Asset
+from app.models.supplier_and_lots import IngredientLot
 from app.rules.coldchain_rules import Band, clock_skew_ok, is_breach
 from app.rules.thresholds import load_thresholds
-from app.services import lineage_query
 from app.services.lineage_presenter import present
-from app.services.lineage_query import NodeRef
+from app.services.lineage_query import LineageResult, NodeRef
 
 
 def _asset_by_code(session: Session, code: str) -> Asset:
@@ -53,15 +53,37 @@ def ingest_reading(session: Session, principal: Principal, asset_code: str, ts: 
         SensorReading(asset_id=asset.id, ts=ts, received_at=now, source_client=principal.client_id or "", temp_c=temp_c)
     )
     session.flush()
+    band = Band(asset.min_c, asset.max_c)
+    # After QA acknowledged an alert, only readings that follow a return into the band may raise a
+    # new one (a fridge that stays broken must not open an alert every few seconds).
+    last_ack = session.scalar(
+        select(func.max(ColdChainAlert.acknowledged_at)).where(ColdChainAlert.asset_id == asset.id)
+    )
+    since = None
+    if last_ack is not None:
+        since = session.scalar(
+            select(func.min(SensorReading.received_at)).where(
+                SensorReading.asset_id == asset.id,
+                SensorReading.received_at > last_ack,
+                SensorReading.temp_c.between(
+                    asset.min_c if asset.min_c is not None else -1000, asset.max_c if asset.max_c is not None else 1000
+                ),
+            )
+        )
+        if since is None:  # not back in band since the acknowledgement
+            session.commit()
+            return {"accepted": True, "breach": False, "alert_id": None}
     latest = session.scalars(
         select(SensorReading.temp_c)
-        .where(SensorReading.asset_id == asset.id)
+        .where(
+            SensorReading.asset_id == asset.id, SensorReading.received_at > (since or datetime.min.replace(tzinfo=UTC))
+        )
         .order_by(SensorReading.received_at.desc(), SensorReading.id.desc())
         .limit(10)
     ).all()
     alert_id = None
     window = latest[: int(th.get("coldchain_consecutive_n"))]  # the readings that make the breach
-    if is_breach(latest, Band(asset.min_c, asset.max_c), th):
+    if is_breach(latest, band, th):
         alert_id = session.scalar(
             insert(ColdChainAlert)
             .values(id=uuid.uuid4(), asset_id=asset.id, max_temp_c=max(window), status=AlertStatus.OPEN)
@@ -89,9 +111,13 @@ def ingest_reading(session: Session, principal: Principal, asset_code: str, ts: 
 
 
 def affected(session: Session, asset: Asset) -> dict:
-    """What sat in the fridge: lots (and their downstream) plus retained samples."""
-    walk = lineage_query.forward(session, NodeRef("asset", asset.id), max_depth=lineage_query.MAX_DEPTH_CAP)
-    nodes = [n for n in present(session, walk)["nodes"] if n["type"] in ("lot", "batch")]
+    """What is in the fridge NOW: lots in stock stored there, plus retained samples."""
+    lots = session.scalars(
+        select(IngredientLot.id).where(
+            IngredientLot.storage_asset_id == asset.id, IngredientLot.status == LotStatus.IN_STOCK
+        )
+    ).all()
+    nodes = present(session, LineageResult({NodeRef("lot", lot_id): 1 for lot_id in lots}))["nodes"]
     samples = session.scalars(
         select(RetainedSample.seal_code).where(
             RetainedSample.fridge_asset_id == asset.id, RetainedSample.status == SampleStatus.STORED

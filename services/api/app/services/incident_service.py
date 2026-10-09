@@ -125,3 +125,21 @@ def approve_close(session: Session, principal: Principal, request_id: uuid.UUID)
     emit(session, "incident.closed", {"incident_id": incident.id}, aggregate_type="incident", aggregate_id=incident.id)
     session.commit()
     return incident
+
+
+def reject_close(session: Session, principal: Principal, request_id: uuid.UUID, note: str) -> IncidentCloseRequest:
+    """The approver disagrees: the incident stays open and QA can file a new request."""
+    request = get_or_404(session, IncidentCloseRequest, request_id, "close request", for_update=True)
+    if request.status != CloseRequestStatus.PENDING:
+        raise AppError(409, ReasonCode.CONFLICT, f"Close request is {request.status}")
+    request.status, request.decided_by, request.decided_at = CloseRequestStatus.REJECTED, principal.username, utcnow()
+    append_audit(
+        session,
+        actor=principal.username,
+        action="incident.close_rejected",
+        entity_type="incident",
+        entity_id=request.incident_id,
+        payload={"request": request.id, "note": note},
+    )
+    session.commit()
+    return request

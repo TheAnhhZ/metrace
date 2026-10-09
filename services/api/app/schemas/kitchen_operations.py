@@ -10,24 +10,11 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.models.enums import MealSlot
+from app.schemas.findings import Finding
 
 
 class _Read(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-
-
-class Finding(BaseModel):
-    """One Poka-yoke result. Extra keys carry context (measured, limit, unit, basis, basis_type, batch, ...)."""
-
-    model_config = ConfigDict(extra="allow")
-
-    rule: str
-    code: str
-    measured: str | None = None
-    limit: str | None = None
-    unit: str | None = None
-    basis: str | None = None
-    basis_type: str | None = None
 
 
 class WithWarnings(BaseModel):
@@ -37,8 +24,8 @@ class WithWarnings(BaseModel):
 # -- receiving (Mẫu 1) ----------------------------------------------------------
 class ReceivingLineIn(BaseModel):
     ingredient_id: uuid.UUID
-    qty_kg: Decimal = Field(gt=0)
-    temp_c: Decimal | None = None
+    qty_kg: Decimal = Field(gt=0, le=100000)
+    temp_c: Decimal | None = Field(None, ge=-60, le=120)
     expiry: date | None = None
     storage_asset_id: uuid.UUID | None = None
 
@@ -74,13 +61,13 @@ class BatchIn(BaseModel):
     dish_id: uuid.UUID
     service_date: date
     meal_slot: MealSlot
-    portions_planned: int = Field(ge=0)
+    portions_planned: int = Field(ge=0, le=100000)
 
 
 class BatchInputIn(BaseModel):
     lot_id: uuid.UUID | None = None
     input_batch_id: uuid.UUID | None = None
-    qty_kg: Decimal = Field(gt=0)
+    qty_kg: Decimal = Field(gt=0, le=100000)
 
     @model_validator(mode="after")
     def exactly_one_source(self) -> "BatchInputIn":
@@ -90,8 +77,8 @@ class BatchInputIn(BaseModel):
 
 
 class BatchFinishIn(BaseModel):
-    core_temp_c: Decimal
-    portions_produced: int = Field(ge=0)
+    core_temp_c: Decimal = Field(ge=-60, le=300)
+    portions_produced: int = Field(ge=0, le=100000)
 
 
 class BatchInputOut(BaseModel):
@@ -124,8 +111,8 @@ class BatchOut(_Read):
 # -- samples --------------------------------------------------------------------
 class SampleIn(BaseModel):
     batch_id: uuid.UUID
-    qty_g: int | None = Field(None, gt=0)
-    qty_ml: int | None = Field(None, gt=0)
+    qty_g: int | None = Field(None, gt=0, le=10000)
+    qty_ml: int | None = Field(None, gt=0, le=10000)
     fridge_asset_id: uuid.UUID | None = None
 
 
@@ -151,7 +138,7 @@ class SampleListOut(BaseModel):
 class PortionCheckIn(BaseModel):
     batch_id: uuid.UUID
     shipment_id: uuid.UUID
-    portions: int = Field(gt=0)
+    portions: int = Field(gt=0, le=100000)
     menu_match: bool = True
     sensory_ok: bool = True
     note: str = ""
@@ -166,7 +153,7 @@ class ShipmentIn(BaseModel):
 
 class ShipmentItemIn(BaseModel):
     batch_id: uuid.UUID
-    portions: int = Field(gt=0)
+    portions: int = Field(gt=0, le=100000)
 
 
 class ShipmentItemOut(BaseModel):

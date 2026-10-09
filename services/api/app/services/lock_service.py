@@ -11,16 +11,18 @@ closed. Each incident releases only its own locks.
 import time
 import uuid
 from dataclasses import dataclass, field
+from datetime import timedelta
 
 from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from app.core.audit_hash_chain import append_audit
-from app.core.business_time import utcnow
+from app.core.business_time import service_date, utcnow
 from app.core.errors import AppError
 from app.core.outbox import emit
 from app.core.reason_codes import ReasonCode
+from app.core.settings import get_settings
 from app.models.enums import ShipmentStatus
 from app.models.incident import Incident, Lock
 from app.models.shipment import Shipment
@@ -40,6 +42,7 @@ class LockResult:
     audit_head: tuple[int, str]
     elapsed_ms: int
     blast_radius: dict = field(default_factory=dict)
+    truncated: bool = False  # walk hit a cap: every open shipment was held (fail closed)
 
 
 def apply(session: Session, incident: Incident, suspects: list[NodeRef], lock_lots: bool, actor: str) -> LockResult:
@@ -52,15 +55,14 @@ def apply(session: Session, incident: Incident, suspects: list[NodeRef], lock_lo
             422, ReasonCode.VALIDATION_ERROR, "Only batches, lots and suppliers can be locked", details={"invalid": bad}
         )
     targets = set(suspects)
+    truncated = False
     batches = [s for s in suspects if s.type == "batch"]
     if lock_lots and batches:
-        up = lineage_query.backward_many(session, batches, max_depth=lineage_query.MAX_DEPTH_CAP)
-        if up.truncated:
-            raise AppError(422, ReasonCode.P3_LINEAGE_TRUNCATED, "Lineage too large to lock safely", rule="P3")
+        up = lineage_query.backward_many(session, batches, max_depth=lineage_query.MAX_DEPTH_CAP, max_nodes=5000)
+        truncated |= up.truncated
         targets |= {n for n in up.nodes if n.type == "lot"}
     down = lineage_query.forward_many(session, sorted(targets), max_depth=lineage_query.MAX_DEPTH_CAP, max_nodes=5000)
-    if down.truncated:
-        raise AppError(422, ReasonCode.P3_LINEAGE_TRUNCATED, "Lineage too large to lock safely", rule="P3")
+    truncated |= down.truncated
 
     for target in sorted(targets):
         session.execute(
@@ -76,12 +78,11 @@ def apply(session: Session, incident: Incident, suspects: list[NodeRef], lock_lo
             .on_conflict_do_nothing(index_elements=["incident_id", "target_type", "target_id"], index_where=Lock.active)
         )
     shipment_ids = sorted(down.ids("shipment"))
-    pending = session.scalars(
-        select(Shipment)
-        .where(Shipment.id.in_(shipment_ids), Shipment.status.in_([ShipmentStatus.PLANNED, ShipmentStatus.READY]))
-        .order_by(Shipment.id)
-        .with_for_update()
-    ).all()
+    open_trucks = select(Shipment).where(Shipment.status.in_([ShipmentStatus.PLANNED, ShipmentStatus.READY]))
+    if not truncated:
+        open_trucks = open_trucks.where(Shipment.id.in_(shipment_ids))
+    # Truncated walk = we may not see every affected truck: fail closed and hold ALL open ones.
+    pending = session.scalars(open_trucks.order_by(Shipment.id).with_for_update()).all()
     for shipment in pending:
         shipment.status = ShipmentStatus.HELD
     held = [s.id for s in pending]
@@ -91,6 +92,7 @@ def apply(session: Session, incident: Incident, suspects: list[NodeRef], lock_lo
                 select(Shipment.id).where(
                     Shipment.id.in_(shipment_ids),
                     Shipment.status.in_([ShipmentStatus.DISPATCHED, ShipmentStatus.DELIVERED]),
+                    Shipment.service_date >= recall_since(),
                 )
             )
         )
@@ -102,7 +104,7 @@ def apply(session: Session, incident: Incident, suspects: list[NodeRef], lock_lo
         action="lock.applied",
         entity_type="incident",
         entity_id=incident.id,
-        payload={"targets": sorted(t.key for t in targets), "held": held, "dispatched": gone},
+        payload={"targets": sorted(t.key for t in targets), "held": held, "dispatched": gone, "truncated": truncated},
     )
     emit(
         session,
@@ -119,7 +121,13 @@ def apply(session: Session, incident: Incident, suspects: list[NodeRef], lock_lo
         audit_head=(head.seq, head.hash),
         elapsed_ms=int((time.monotonic() - started) * 1000),
         blast_radius={"batches": len(down.ids("batch")), "shipments": len(shipment_ids)},
+        truncated=truncated,
     )
+
+
+def recall_since():
+    """Deliveries older than the recall window have been eaten long ago: no recall notice."""
+    return service_date() - timedelta(days=get_settings().recall_window_days)
 
 
 def release_for_incident(session: Session, incident_id: uuid.UUID, actor: str) -> int:

@@ -12,6 +12,7 @@ from app.models.shipment import Shipment
 from app.schemas.incident import CloseRequestOut, ComplaintOut, IncidentDetailOut, IncidentOut, LockOut
 from app.services import lineage_query
 from app.services.lineage_query import NodeRef
+from app.services.lock_service import recall_since
 
 
 def affected_shipments(session: Session, locks: list[Lock]) -> list[dict]:
@@ -23,7 +24,10 @@ def affected_shipments(session: Session, locks: list[Lock]) -> list[dict]:
         select(Shipment, DeliveryPoint.name, CustomerOrg.kc_org_alias)
         .join(DeliveryPoint, DeliveryPoint.id == Shipment.delivery_point_id)
         .join(CustomerOrg, CustomerOrg.id == DeliveryPoint.customer_org_id)
-        .where(Shipment.id.in_(down.ids("shipment")))
+        .where(
+            Shipment.id.in_(down.ids("shipment")),
+            Shipment.status.in_(["planned", "ready", "held"]) | (Shipment.service_date >= recall_since()),
+        )
         .order_by(Shipment.service_date, Shipment.code)
     ).all()
     return [

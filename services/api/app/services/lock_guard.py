@@ -109,6 +109,7 @@ def _open_incident_service_dates(session: Session) -> set:
 def assert_sample_discard_allowed(session: Session, principal: Principal, sample_id, batch: CookingBatch) -> None:
     """Never destroy evidence while an incident could need it: the batch (or its upstream)
     is locked, an open incident names it as a suspect, or covers its service day."""
+    serialize_lock_decisions(session)  # a discard must not race an incident being locked
     locked = _check_upstream(session, [NodeRef("batch", batch.id)], "P4", RC.P4_DISCARD_DURING_INCIDENT)
     suspected = session.scalars(
         select(Incident.code).where(

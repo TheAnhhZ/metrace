@@ -68,8 +68,8 @@ def complete_triage(message: OutboxMessage) -> None:
 
 @handles("incident.closed")
 def complete_close(message: OutboxMessage) -> None:
-    _complete_if_open(message.payload["incident_id"], "qa_triage")
-    _complete_if_open(message.payload["incident_id"], "close_approval")
+    for task in ("qa_triage", "director_escalation", "close_approval"):  # ends the process, no stale tasks
+        _complete_if_open(message.payload["incident_id"], task)
 
 
 @handles("lock.applied")

@@ -590,6 +590,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/close-requests/{request_id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reject Close */
+        post: operations["reject_close_api_v1_close_requests__request_id__reject_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/portal/delivery-points": {
         parameters: {
             query?: never;
@@ -823,6 +840,40 @@ export interface paths {
         put?: never;
         /** Approve Report */
         post: operations["approve_report_api_v1_incidents__incident_id__report_approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/forms/2/{batch_id}.pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Form 2 */
+        get: operations["form_2_api_v1_forms_2__batch_id__pdf_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recall-drills": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Recall Drill */
+        post: operations["recall_drill_api_v1_recall_drills_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1212,6 +1263,12 @@ export interface components {
             /** Portion Size G */
             portion_size_g: number;
         };
+        /** DrillIn */
+        DrillIn: {
+            type: components["schemas"]["LineageNodeType"];
+            /** Ref */
+            ref: string;
+        };
         /** FileOut */
         FileOut: {
             /**
@@ -1490,6 +1547,11 @@ export interface components {
             };
             /** Elapsed Ms */
             elapsed_ms: number;
+            /**
+             * Truncated
+             * @default false
+             */
+            truncated: boolean;
         };
         /** LotListOut */
         LotListOut: {
@@ -1730,7 +1792,7 @@ export interface components {
             /**
              * Ts
              * Format: date-time
-             * @description Device clock; rejected when more than 60 s away from server time
+             * @description Device clock with offset; rejected when more than 60 s off server time
              */
             ts: string;
             /** Temp C */
@@ -3241,6 +3303,41 @@ export interface operations {
             };
         };
     };
+    reject_close_api_v1_close_requests__request_id__reject_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CloseRequestIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CloseRequestOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_my_points_api_v1_portal_delivery_points_get: {
         parameters: {
             query?: never;
@@ -3661,6 +3758,70 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["IncidentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    form_2_api_v1_forms_2__batch_id__pdf_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    recall_drill_api_v1_recall_drills_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DrillIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
             };
             /** @description Validation Error */

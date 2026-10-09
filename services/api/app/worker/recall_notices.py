@@ -7,6 +7,7 @@ learns about other customers). It carries the audit head (seq, hash) as an
 anchor outside the database.
 """
 
+import logging
 import uuid
 from collections import defaultdict
 
@@ -21,26 +22,36 @@ from app.models.kitchen_and_customers import DeliveryPoint
 from app.models.shipment import Shipment, ShipmentItem
 from app.services import lineage_query
 from app.services.lineage_query import NodeRef
+from app.services.lock_service import recall_since
+
+log = logging.getLogger("metrace.worker.notices")
 
 ACTION = {"held": "hold", "planned": "hold", "ready": "hold", "dispatched": "recall", "delivered": "recall"}
 
 
 def _affected(session: Session, incident_id: uuid.UUID):
-    locks = session.scalars(select(Lock).where(Lock.incident_id == incident_id, Lock.active)).all()
+    # Every lock the incident ever had: a notice is still owed if it closed before the worker ran.
+    locks = session.scalars(select(Lock).where(Lock.incident_id == incident_id)).all()
     if not locks:
         return {}
     down = lineage_query.forward_many(
         session,
         [NodeRef(lock.target_type, lock.target_id) for lock in locks],
         max_depth=lineage_query.MAX_DEPTH_CAP,
-        max_nodes=5000,
+        max_nodes=50000,
     )
+    if down.truncated:
+        log.error("incident %s: lineage walk truncated, notices may be incomplete", incident_id)
     rows = session.execute(
         select(Shipment, ShipmentItem.portions, CookingBatch.batch_code, Dish.name)
         .join(ShipmentItem, ShipmentItem.shipment_id == Shipment.id)
         .join(CookingBatch, CookingBatch.id == ShipmentItem.batch_id)
         .join(Dish, Dish.id == CookingBatch.dish_id)
-        .where(Shipment.id.in_(down.ids("shipment")), ShipmentItem.batch_id.in_(down.ids("batch")))
+        .where(
+            Shipment.id.in_(down.ids("shipment")),
+            ShipmentItem.batch_id.in_(down.ids("batch")),
+            Shipment.service_date >= recall_since(),
+        )
         .order_by(Shipment.code, CookingBatch.batch_code)
     ).all()
     per_point: dict = defaultdict(dict)
@@ -70,22 +81,27 @@ def upsert_notices(session: Session, incident_id: uuid.UUID, anchor: tuple[int, 
         point = session.get(DeliveryPoint, point_id)
         content = {
             "incident": incident.code,
-            "title": incident.title,
+            # QA's free-text title may name other customers: never shown to a customer.
+            "title": "Thu hồi / tạm giữ suất ăn",
             "delivery_point": point.name,
             "shipments": list(shipments.values()),
         }
+        stmt = insert(RecallNotice).values(
+            id=uuid.uuid4(),
+            incident_id=incident_id,
+            customer_org_id=point.customer_org_id,
+            delivery_point_id=point_id,
+            content=content,
+            audit_seq=seq,
+            audit_hash=digest,
+        )
+        # Changed content (e.g. more trucks affected) must be acknowledged again.
         session.execute(
-            insert(RecallNotice)
-            .values(
-                id=uuid.uuid4(),
-                incident_id=incident_id,
-                customer_org_id=point.customer_org_id,
-                delivery_point_id=point_id,
-                content=content,
-                audit_seq=seq,
-                audit_hash=digest,
+            stmt.on_conflict_do_update(
+                constraint="uq_recall_notice_point",
+                set_={"content": content, "acknowledged_at": None, "acknowledged_by": None},
+                where=RecallNotice.content != stmt.excluded.content,
             )
-            .on_conflict_do_update(constraint="uq_recall_notice_point", set_={"content": content})
         )
     return len(per_point)
 

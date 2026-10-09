@@ -80,6 +80,7 @@ def confirm_suspects(incident_id: uuid.UUID, req: ConfirmSuspectsIn, session: Db
         delivery_points=result.delivery_points,
         audit_head={"seq": result.audit_head[0], "hash": result.audit_head[1]},
         elapsed_ms=result.elapsed_ms,
+        truncated=result.truncated,
     )
 
 
@@ -93,3 +94,8 @@ def request_close(incident_id: uuid.UUID, req: CloseRequestIn, session: DbSessio
 @router.post("/close-requests/{request_id}/approve", response_model=IncidentOut, dependencies=APPROVER)
 def approve_close(request_id: uuid.UUID, session: DbSession, principal: CurrentPrincipal):
     return incident_service.approve_close(session, principal, request_id)
+
+
+@router.post("/close-requests/{request_id}/reject", response_model=CloseRequestOut, dependencies=APPROVER)
+def reject_close(request_id: uuid.UUID, req: CloseRequestIn, session: DbSession, principal: CurrentPrincipal):
+    return incident_service.reject_close(session, principal, request_id, req.note)

@@ -1928,6 +1928,64 @@
         }
       }
     },
+    "/api/v1/close-requests/{request_id}/reject": {
+      "post": {
+        "tags": [
+          "incidents"
+        ],
+        "summary": "Reject Close",
+        "operationId": "reject_close_api_v1_close_requests__request_id__reject_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Request Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CloseRequestIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloseRequestOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/portal/delivery-points": {
       "get": {
         "tags": [
@@ -2616,6 +2674,95 @@
           }
         }
       }
+    },
+    "/api/v1/forms/2/{batch_id}.pdf": {
+      "get": {
+        "tags": [
+          "forms and drills"
+        ],
+        "summary": "Form 2",
+        "operationId": "form_2_api_v1_forms_2__batch_id__pdf_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Batch Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/recall-drills": {
+      "post": {
+        "tags": [
+          "forms and drills"
+        ],
+        "summary": "Recall Drill",
+        "operationId": "recall_drill_api_v1_recall_drills_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DrillIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Recall Drill Api V1 Recall Drills Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -2690,7 +2837,9 @@
           "core_temp_c": {
             "anyOf": [
               {
-                "type": "number"
+                "type": "number",
+                "maximum": 300.0,
+                "minimum": -60.0
               },
               {
                 "type": "string"
@@ -2700,6 +2849,7 @@
           },
           "portions_produced": {
             "type": "integer",
+            "maximum": 100000.0,
             "minimum": 0.0,
             "title": "Portions Produced"
           }
@@ -2728,6 +2878,7 @@
           },
           "portions_planned": {
             "type": "integer",
+            "maximum": 100000.0,
             "minimum": 0.0,
             "title": "Portions Planned"
           }
@@ -2771,6 +2922,7 @@
             "anyOf": [
               {
                 "type": "number",
+                "maximum": 100000.0,
                 "exclusiveMinimum": 0.0
               },
               {
@@ -3208,6 +3360,7 @@
           },
           "affected_count": {
             "type": "integer",
+            "maximum": 100000.0,
             "minimum": 0.0,
             "title": "Affected Count",
             "default": 0
@@ -3521,6 +3674,23 @@
           "portion_size_g"
         ],
         "title": "DishOut"
+      },
+      "DrillIn": {
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/LineageNodeType"
+          },
+          "ref": {
+            "type": "string",
+            "title": "Ref"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "ref"
+        ],
+        "title": "DrillIn"
       },
       "FileOut": {
         "properties": {
@@ -4291,6 +4461,11 @@
           "elapsed_ms": {
             "type": "integer",
             "title": "Elapsed Ms"
+          },
+          "truncated": {
+            "type": "boolean",
+            "title": "Truncated",
+            "default": false
           }
         },
         "type": "object",
@@ -4627,6 +4802,7 @@
           },
           "affected_count": {
             "type": "integer",
+            "maximum": 100000.0,
             "minimum": 0.0,
             "title": "Affected Count",
             "default": 0
@@ -4715,6 +4891,7 @@
           },
           "portions": {
             "type": "integer",
+            "maximum": 100000.0,
             "exclusiveMinimum": 0.0,
             "title": "Portions"
           },
@@ -4779,7 +4956,7 @@
             "type": "string",
             "format": "date-time",
             "title": "Ts",
-            "description": "Device clock; rejected when more than 60 s away from server time"
+            "description": "Device clock with offset; rejected when more than 60 s off server time"
           },
           "temp_c": {
             "anyOf": [
@@ -4860,6 +5037,7 @@
             "anyOf": [
               {
                 "type": "number",
+                "maximum": 100000.0,
                 "exclusiveMinimum": 0.0
               },
               {
@@ -4871,7 +5049,9 @@
           "temp_c": {
             "anyOf": [
               {
-                "type": "number"
+                "type": "number",
+                "maximum": 120.0,
+                "minimum": -60.0
               },
               {
                 "type": "string"
@@ -4987,6 +5167,7 @@
             "anyOf": [
               {
                 "type": "integer",
+                "maximum": 10000.0,
                 "exclusiveMinimum": 0.0
               },
               {
@@ -4999,6 +5180,7 @@
             "anyOf": [
               {
                 "type": "integer",
+                "maximum": 10000.0,
                 "exclusiveMinimum": 0.0
               },
               {
@@ -5178,6 +5360,7 @@
           },
           "portions": {
             "type": "integer",
+            "maximum": 100000.0,
             "exclusiveMinimum": 0.0,
             "title": "Portions"
           }

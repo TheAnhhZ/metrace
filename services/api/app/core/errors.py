@@ -12,6 +12,7 @@ from typing import Any
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from sqlalchemy.exc import DataError, IntegrityError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.core.reason_codes import ReasonCode
@@ -92,6 +93,15 @@ def install_error_handlers(app: FastAPI) -> None:
     async def _http(request: Request, exc: StarletteHTTPException):
         code = _STATUS_TO_CODE.get(exc.status_code, ReasonCode.INTERNAL_ERROR)
         return _envelope(request, exc.status_code, code, str(exc.detail), headers=getattr(exc, "headers", None))
+
+    @app.exception_handler(IntegrityError)
+    async def _integrity(request: Request, exc: IntegrityError):
+        # Duplicate or dangling reference sent by the client (e.g. the same batch twice on a truck).
+        return _envelope(request, 409, ReasonCode.CONFLICT, "Conflicts with existing data")
+
+    @app.exception_handler(DataError)
+    async def _data(request: Request, exc: DataError):
+        return _envelope(request, 422, ReasonCode.VALIDATION_ERROR, "Value out of range")
 
     @app.exception_handler(Exception)
     async def _unexpected(request: Request, exc: Exception):

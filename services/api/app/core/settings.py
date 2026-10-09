@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     # Cold-chain alert: time for QA to check the fridge before the director is pulled in.
     coldchain_check_sla: str = "PT10M"
 
+    # Recall notices cover deliveries of the last N service days (older food is long eaten).
+    recall_window_days: int = 3
+
     # P6 complaint SLA comes from the customer profile (sla_hours); demos can shorten it.
     complaint_sla_override_minutes: int | None = None
 

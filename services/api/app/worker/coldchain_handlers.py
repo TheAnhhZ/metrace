@@ -48,8 +48,9 @@ def complete_fridge_check(message: OutboxMessage) -> None:
         instance = flowable.find_process_instance(PROCESS_KEY, f"coldchain:{message.payload['alert_id']}")
         if instance is None:
             return
-        for task in flowable.tasks(instance["id"], "qa_check_fridge"):
-            flowable.complete_task(task["id"])
+        for key in ("qa_check_fridge", "director_escalation"):  # no stale escalation task left behind
+            for task in flowable.tasks(instance["id"], key):
+                flowable.complete_task(task["id"])
 
 
 @reconciler

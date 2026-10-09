@@ -20,7 +20,7 @@ class ComplaintIn(BaseModel):
     channel: ComplaintChannel = ComplaintChannel.CSKH
     service_date: date
     meal_slot: MealSlot
-    affected_count: int = Field(0, ge=0)
+    affected_count: int = Field(0, ge=0, le=100000)
     description: str = Field("", max_length=2000)
 
 
@@ -131,3 +131,4 @@ class LockResultOut(BaseModel):
     delivery_points: list[uuid.UUID]
     audit_head: dict[str, Any]
     elapsed_ms: int
+    truncated: bool = False

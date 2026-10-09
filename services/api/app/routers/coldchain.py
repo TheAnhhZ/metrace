@@ -3,11 +3,10 @@
 """Cold chain: readings from the sensor gateway (machine identity) and alerts for staff."""
 
 import uuid
-from datetime import datetime
 from decimal import Decimal
 
 from fastapi import Depends, Query
-from pydantic import BaseModel, Field
+from pydantic import AwareDatetime, BaseModel, Field
 
 from app.core.authentication import CurrentPrincipal
 from app.core.authorization import internal_router, require_any_role, sensor_router
@@ -19,7 +18,7 @@ alerts = internal_router(prefix="/api/v1/coldchain", tags=["cold chain"])
 
 
 class ReadingIn(BaseModel):
-    ts: datetime = Field(description="Device clock; rejected when more than 60 s away from server time")
+    ts: AwareDatetime = Field(description="Device clock with offset; rejected when more than 60 s off server time")
     temp_c: Decimal = Field(ge=-60, le=120)
 
 

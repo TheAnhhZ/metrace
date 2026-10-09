@@ -8,6 +8,7 @@ import io
 from collections.abc import Sequence
 from functools import cache
 from pathlib import Path
+from xml.sax.saxutils import escape
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
@@ -38,7 +39,8 @@ def styles() -> dict[str, ParagraphStyle]:
 
 def table(rows: Sequence[Sequence[object]], widths: Sequence[float], header: bool = True) -> Table:
     st = styles()["body"]
-    data = [[Paragraph("" if cell is None else str(cell), st) for cell in row] for row in rows]
+    # Escape: ReportLab paragraphs parse markup, and cells carry master data typed by people.
+    data = [[Paragraph(escape("" if cell is None else str(cell)), st) for cell in row] for row in rows]
     t = Table(data, colWidths=[w * mm for w in widths], repeatRows=1 if header else 0)
     commands = [
         ("GRID", (0, 0), (-1, -1), 0.4, colors.grey),
