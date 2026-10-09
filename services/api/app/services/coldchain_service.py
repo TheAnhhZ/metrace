@@ -60,10 +60,11 @@ def ingest_reading(session: Session, principal: Principal, asset_code: str, ts: 
         .limit(10)
     ).all()
     alert_id = None
+    window = latest[: int(th.get("coldchain_consecutive_n"))]  # the readings that make the breach
     if is_breach(latest, Band(asset.min_c, asset.max_c), th):
         alert_id = session.scalar(
             insert(ColdChainAlert)
-            .values(id=uuid.uuid4(), asset_id=asset.id, max_temp_c=max(latest), status=AlertStatus.OPEN)
+            .values(id=uuid.uuid4(), asset_id=asset.id, max_temp_c=max(window), status=AlertStatus.OPEN)
             .on_conflict_do_nothing(index_elements=["asset_id"], index_where=ColdChainAlert.status == "open")
             .returning(ColdChainAlert.id)
         )
@@ -74,7 +75,7 @@ def ingest_reading(session: Session, principal: Principal, asset_code: str, ts: 
                 action="coldchain.alert_opened",
                 entity_type="asset",
                 entity_id=asset.id,
-                payload={"asset": asset.code, "readings": [str(t) for t in latest[:3]]},
+                payload={"asset": asset.code, "readings": [str(t) for t in window]},
             )
             emit(
                 session,

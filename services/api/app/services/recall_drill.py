@@ -15,14 +15,17 @@ from sqlalchemy.orm import Session
 from app.core.audit_hash_chain import append_audit
 from app.core.principal import Principal
 from app.models.cooking import CookingBatch
+from app.models.enums import ShipmentStatus
 from app.models.incident import Incident
-from app.models.shipment import ShipmentItem
+from app.models.shipment import Shipment, ShipmentItem
 from app.services import lineage_query, lock_service
 from app.services.lineage_query import NodeRef
 
 
 def coverage(session: Session, batch_ids: set) -> dict:
-    """Share of produced portions of the affected batches that reached a known delivery point."""
+    """Share of produced portions of the affected batches that LEFT the kitchen to a known
+    delivery point (dispatched/delivered). Planned or held trucks are still in the kitchen.
+    No affected portions at all => coverage is None (nothing to locate), not 100 %."""
     served = session.execute(
         select(CookingBatch.id, CookingBatch.batch_code, CookingBatch.portions_produced).where(
             CookingBatch.id.in_(batch_ids), CookingBatch.portions_produced > 0
@@ -31,7 +34,11 @@ def coverage(session: Session, batch_ids: set) -> dict:
     shipped = dict(
         session.execute(
             select(ShipmentItem.batch_id, func.sum(ShipmentItem.portions))
-            .where(ShipmentItem.batch_id.in_([b.id for b in served]))
+            .join(Shipment, Shipment.id == ShipmentItem.shipment_id)
+            .where(
+                ShipmentItem.batch_id.in_([b.id for b in served]),
+                Shipment.status.in_([ShipmentStatus.DISPATCHED, ShipmentStatus.DELIVERED]),
+            )
             .group_by(ShipmentItem.batch_id)
         ).all()
     )
@@ -40,7 +47,7 @@ def coverage(session: Session, batch_ids: set) -> dict:
     return {
         "produced_portions": produced,
         "located_portions": located,
-        "coverage_pct": round(100 * located / produced, 1) if produced else 100.0,
+        "coverage_pct": round(100 * located / produced, 1) if produced else None,
         "batches": [
             {"batch": b.batch_code, "produced": b.portions_produced, "shipped": int(shipped.get(b.id, 0))}
             for b in served

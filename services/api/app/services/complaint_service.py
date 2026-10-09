@@ -45,7 +45,7 @@ CLUSTER_SQL = text(
 
 def sla_due(session: Session, customer_org_id) -> datetime:
     override = get_settings().complaint_sla_override_minutes
-    if override:
+    if override is not None:
         return utcnow() + timedelta(minutes=override)
     org = session.get(CustomerOrg, customer_org_id)
     return utcnow() + timedelta(hours=int((org.profile or {}).get("sla_hours", SLA_HOURS)))

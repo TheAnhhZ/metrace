@@ -111,7 +111,7 @@ def test_incident_scene(scene):
     assert len(detail["shipments"]) >= 9
 
 
-def test_requester_cannot_approve_own_close_request(scene):
+def test_requester_cannot_approve_own_close_request():
     incident = ok(call("POST", "/incidents", "approver-ha", json={"title": "Four-eyes probe"}), 201)
     request = ok(call("POST", f"/incidents/{incident['id']}/close-requests", "approver-ha", json={}), 201)
     res = call("POST", f"/close-requests/{request['id']}/approve", "approver-ha")

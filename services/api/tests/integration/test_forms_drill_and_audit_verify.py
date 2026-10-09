@@ -40,7 +40,9 @@ def test_recall_drill_is_a_dry_run(broth_lot):
     incidents_before, locked_before = {i["id"] for i in call("GET", "/incidents").json()}, _lock_state(broth_lot)
     result = call("POST", "/recall-drills", json={"type": "lot", "ref": broth_lot}).json()
     assert result["forward"]["delivery_point"] >= 1
-    assert result["lock_preview"] is not None and 0 <= result["coverage"]["coverage_pct"] <= 100
+    assert result["lock_preview"] is not None
+    pct = result["coverage"]["coverage_pct"]
+    assert pct is None or 0 <= pct <= 100
     # Dry run: no incident, no lock left behind.
     assert {i["id"] for i in call("GET", "/incidents").json()} == incidents_before
     assert _lock_state(broth_lot) == locked_before

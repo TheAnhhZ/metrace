@@ -55,9 +55,15 @@ def test_unknown_file_is_404_not_500():
 @pytest.mark.parametrize(
     ("data", "mime", "status", "code"),
     [
-        (EICAR, "application/pdf", 415, "FILE_TYPE_NOT_ALLOWED"),
-        (PNG, "application/pdf", 415, "FILE_TYPE_MISMATCH"),
-        (b"\x89PNG\r\n\x1a\n" + b"\x00" * (10 * 1024 * 1024 + 1), "image/png", 413, "FILE_TOO_LARGE"),
+        pytest.param(EICAR, "application/pdf", 415, "FILE_TYPE_NOT_ALLOWED", id="eicar-text"),
+        pytest.param(PNG, "application/pdf", 415, "FILE_TYPE_MISMATCH", id="png-declared-pdf"),
+        pytest.param(
+            b"\x89PNG\r\n\x1a\n" + b"\x00" * (10 * 1024 * 1024 + 1),
+            "image/png",
+            413,
+            "FILE_TOO_LARGE",
+            id="png-over-10mib",
+        ),
     ],
 )
 def test_bad_uploads_are_rejected_with_reason_code(data, mime, status, code):
