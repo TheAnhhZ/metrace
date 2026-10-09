@@ -36,7 +36,13 @@ test-integration: dev-ports ## integration tests (starts the dev-ports stack; wr
 demo-reset: ## fresh demo data for "today" (keeps master data), restarts the worker
 	scripts/demo-reset.sh baseline
 
+demo-preflight: ## before going on stage: clocks, health, reset, warm-up
+	scripts/demo-preflight.sh
+
+licenses: ## regenerate docs/license-declaration.{md,csv}; fails outside the allow-list
+	scripts/generate-license-inventory.sh
+
 openapi: ## export the API schema for the web client (packages/api-client/openapi.json)
 	cd services/api && uv run python -c "import json; from app.main import create_app; print(json.dumps(create_app().openapi(), indent=2, ensure_ascii=False))" > ../../packages/api-client/openapi.json
 
-.PHONY: help init up dev-ports down reset lint test test-integration openapi demo-reset
+.PHONY: help init up dev-ports down reset lint test test-integration openapi demo-reset demo-preflight licenses

@@ -62,3 +62,18 @@ jobs:
       - run: npm run build
       - name: no CC-BY caniuse-lite in the dependency tree
         run: bash scripts/check-caniuse-lite.sh
+
+  licenses:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: license inventory (fails outside the allow-list)
+        run: scripts/generate-license-inventory.sh
+      - name: declaration is up to date
+        run: git diff --exit-code docs/license-declaration.md docs/license-declaration.csv

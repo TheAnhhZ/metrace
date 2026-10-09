@@ -72,9 +72,19 @@ The database stores `timestamptz` in UTC. Business dates (service day, meal
 time) are computed in `BUSINESS_TZ=Asia/Ho_Chi_Minh`. The API returns
 `server_now` so countdowns in the UI do not depend on the client clock.
 
-## Open question
+## Machines and evidence
 
-Tier 2 currently reaches PostgreSQL, SeaweedFS and Flowable directly on the
-internal docker network. PostgreSQL cannot sit behind an HTTP gateway. If the
-competition requires all Tier 1 access to go through the gateway, Flowable and
-S3 traffic will move to internal APISIX routes with a service token.
+- **Sensors** use their own machine identity (`sensor-gateway`, client
+  credentials) with a claim listing the assets they may report for, through a
+  separate gateway route with its own rate-limit bucket.
+- **Audit chain:** every business change appends a hash-chained audit event in
+  the same transaction. The chain head (seq, hash) is printed outside the
+  database (recall notices, PDF footers, drill results) and can be verified
+  against it later. This is tamper-evidence, not a digital signature.
+
+## Tier boundary
+
+Tier 2 reaches PostgreSQL, SeaweedFS and Flowable directly on the internal
+docker network (PostgreSQL cannot sit behind an HTTP gateway). If all Tier 1
+access had to go through the gateway, Flowable and S3 traffic would move to
+internal APISIX routes with a service token.
