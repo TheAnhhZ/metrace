@@ -153,14 +153,18 @@ def main(python_dir: Path, node_runtime_file: Path) -> int:
         row["osi"] = "yes" if allowed(row["license"]) else "NO"
     with (ROOT / "docs" / "license-declaration.csv").open("w", newline="") as fh:
         writer = csv.DictWriter(
-            fh, fieldnames=["module", "version", "kind", "scope", "license", "osi", "source", "where"]
+            fh,
+            lineterminator="\n",
+            fieldnames=["module", "version", "kind", "scope", "license", "osi", "source", "where"],
         )
         writer.writeheader()
         writer.writerows(rows)
+    # REUSE-IgnoreStart (header text written into the generated file, not this file's license)
     lines = [
         "<!--",
         "SPDX-FileCopyrightText: The metrace Authors",
         "SPDX-License-Identifier: Apache-2.0",
+        # REUSE-IgnoreEnd
         "-->",
         "",
         "# License declaration",

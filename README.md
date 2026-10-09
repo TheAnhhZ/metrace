@@ -5,76 +5,109 @@ SPDX-License-Identifier: Apache-2.0
 
 # metrace
 
-> Working name. Digital operating system for a school/factory catering company:
-> trace a cooking batch back to ingredient lots and suppliers, and lock it at
-> every delivery point within seconds when something goes wrong.
+> Working name. The digital operating system of a catering company that cooks
+> meals for school canteens and factories. When children fall ill, metrace
+> traces the **cooking batch** back to ingredient lots and suppliers, and locks
+> that food at **every** delivery point within a second.
 
-Built on a headless open-source core (Tier 1): **Keycloak** (SSO),
-**Apache APISIX** (gateway), **PostgreSQL + SeaweedFS** (data),
-**Flowable** (workflow). Everything is Apache-2.0 or another OSI license.
+- **Poka-yoke, not paperwork:** a wrong step is impossible, not just recorded —
+  expired supplier certificate, warm delivery, undercooked batch, missing
+  retained sample or missing check form all block the action with the reason
+  and its legal basis.
+- **Trace and lock:** one lineage graph (lot → batch → intermediate batch →
+  shipment → delivery point), recall locks that hold every pending truck in the
+  same transaction, recall notices for food that already left, four-eyes close.
+- **Headless core:** Keycloak (SSO), Apache APISIX (gateway), PostgreSQL +
+  SeaweedFS (data), Flowable (workflow). One web app, a CLI and a sensor
+  simulator all use the same API through the gateway.
 
-## Status
-
-Early development: core platform up (SSO, gateway, data, workflow, worker). See [CHANGELOG.md](CHANGELOG.md).
+All data in this repository is **synthetic** (names tagged DEMO).
 
 ## Quick start
 
-Requirements: Docker with Compose v2 (Colima works on Apple Silicon, give it ≥6 GB),
-GNU Make, Bash.
+Requirements: Docker with Compose v2 (on Apple Silicon: Colima with ≥6 GB),
+GNU Make, Bash, curl, jq.
 
 ```bash
-make init                 # writes .env with random secrets (never committed)
-docker compose up -d --wait
+make init                   # writes .env with random secrets (never committed)
+docker compose up -d --wait # builds, migrates, seeds; first run takes a few minutes
 ```
 
-The single public origin is <http://localhost:9080> (bound to 127.0.0.1 only).
+Open <http://localhost:9080> (bound to 127.0.0.1 only).
 
-| Path      | Service                                   |
-|-----------|-------------------------------------------|
-| `/auth/*` | Keycloak, login/token/device endpoints only |
-| `/api/*`  | metrace API (JWT required, default deny)  |
-| `/*`      | Web app                                   |
+| Path      | Service |
+|-----------|---------|
+| `/`       | Web app: `/ops` for staff (tablet), `/portal` for customers (phone) |
+| `/api/*`  | metrace API (JWT verified at the gateway and again in the API) |
+| `/auth/*` | Keycloak login, token and device endpoints only |
 
-`docker compose up` runs three one-shot jobs before the API starts:
-`migrate` (database schema + S3 bucket), `kc-bootstrap` (organizations,
-memberships, overlays) and, later, `seed` (demo data). All are idempotent.
+Demo accounts (the password is `DEMO_USER_PASSWORD` in your `.env`):
 
-Check a running stack with `scripts/smoke-core.sh`.
+| Username | Role |
+|---|---|
+| `procurement-mai` | Goods receipt |
+| `chef-hung` | Cooking, shipments |
+| `qa-lan` | Quality: samples, checks, incidents |
+| `approver-ha` | Second approver (four-eyes close) |
+| `driver-tuan` | Dispatch |
+| `cskh-thu` | Customer care: complaints |
+| `director-nam` | Director |
+| `truong-a`, `truong-b`, `truong-c`, `nha-may-x` | Customer staff (schools, factory) |
 
-Demo accounts (password is `DEMO_USER_PASSWORD` in your `.env`):
-`qa-lan`, `approver-ha`, `procurement-mai`, `chef-hung`, `driver-tuan`,
-`cskh-thu`, `director-nam` (internal) and `truong-a`, `truong-b`, `truong-c`,
-`nha-may-x` (customer staff, one per customer organization).
+Fresh demo data for "today" at any time:
+
+```bash
+make demo-reset                           # yesterday delivered, today's lunch ready to ship
+scripts/demo-reset.sh baseline,outbreak   # plus two complaints about yesterday's lunch
+```
 
 ## Command line
 
 ```bash
 uv tool install ./cli
-metrace login                       # device flow: approve in the browser (staff accounts only)
-metrace trace lot LOT-20261008-XUONG-LON --direction forward
+metrace login                                     # device flow in the browser, staff only
+metrace trace lot LOT-20261008-XUONG-LON -d forward
 metrace shipments list --status held
-metrace incidents list
+metrace drill run lot LOT-20261008-XUONG-LON      # recall drill, dry run
 ```
 
-`METRACE_URL` (default `http://localhost:9080`) points the CLI at another gateway.
-Tokens are cached in `~/.config/metrace/token.json` (mode 600).
+## Optional pieces
 
-## Demo data
+- **Sensors:** `cd tools/sensor-simulator && uv run simulate_fridge.py --asset TU-MAU-01 --mode breach`
+  (needs `SENSOR_GATEWAY_CLIENT_SECRET` from `.env`).
+- **AI report drafts:** `scripts/ai-up.sh` runs Ollama with Qwen3-4B on the host.
+  Without it, drafts use a deterministic template. A draft never triggers
+  anything; QA edits and approves it.
 
-```bash
-make demo-reset                     # fresh "today": yesterday delivered, today's lunch ready
-scripts/demo-reset.sh baseline,outbreak   # plus two complaints about yesterday's lunch
-```
+## Documentation
+
+| Document | Content |
+|---|---|
+| [architecture.md](docs/architecture.md) | Tiers, data flow, identity model |
+| [domain-model.md](docs/domain-model.md) | Entities, lineage view, demo data |
+| [poka-yoke-rules.md](docs/poka-yoke-rules.md) | Every blocking rule, reason code and threshold basis |
+| [bpmn.md](docs/bpmn.md) | The two workflows (incident recall, cold-chain alert) |
+| [api.md](docs/api.md) | Authentication, authorization, errors, endpoints |
+| [deployment.md](docs/deployment.md) | Configuration, operations, clean-machine check |
+| [demo-guide.md](docs/demo-guide.md) | A 15-minute walkthrough |
+| [license-policy.md](docs/license-policy.md), [license-declaration.md](docs/license-declaration.md) | Licensing |
 
 ## Development
 
 ```bash
-make lint               # ruff + reuse
-make test               # unit tests
-make test-integration   # needs the stack (uses compose.dev-ports.yaml)
+make lint                # ruff + reuse
+make test                # API unit tests
+make test-integration    # starts the stack with dev ports and runs integration tests
+npm ci && npm run typecheck && npm test && npm run build   # web app
+make licenses            # regenerate the license declaration (fails outside the allow-list)
 ```
+
+Building from source: the API, worker and web images are built from this
+repository (`services/api`, `infra/web`); Keycloak is the publisher's image
+with our build options (`infra/keycloak`); the other services are pulled by tag
+from their publishers (see `compose.yaml`).
 
 ## License
 
-Apache-2.0. See [LICENSE](LICENSE). Every file carries an SPDX header;
-`reuse lint` must pass.
+Apache-2.0, see [LICENSE](LICENSE). Every file carries an SPDX header and
+`reuse lint` passes. Contributors are listed in [AUTHORS](AUTHORS).
