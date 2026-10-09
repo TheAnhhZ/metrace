@@ -11,25 +11,25 @@ customers:
   - alias: truong-a
     name: Trường Tiểu học DEMO A
     kind: school
-    profile: { students: 300 }
+    profile: { kind: school, meal_slots: [lunch], sla_hours: 24, disclosure_daily: true, students: 300 }
     portions: { lunch: 300 }
     delivery_point: { code: DP-A, name: "Trường DEMO A - nhà ăn bán trú", address: "Số 1 Đường DEMO, Hà Nội" }
   - alias: truong-b
     name: Trường Tiểu học DEMO B
     kind: school
-    profile: { students: 280 }
+    profile: { kind: school, meal_slots: [lunch], sla_hours: 24, disclosure_daily: true, students: 280 }
     portions: { lunch: 280 }
     delivery_point: { code: DP-B, name: "Trường DEMO B - nhà ăn bán trú", address: "Số 2 Đường DEMO, Hà Nội" }
   - alias: truong-c
     name: Trường THCS DEMO C
     kind: school
-    profile: { students: 320 }
+    profile: { kind: school, meal_slots: [lunch], sla_hours: 24, disclosure_daily: true, students: 320 }
     portions: { lunch: 320 }
     delivery_point: { code: DP-C, name: "Trường DEMO C - nhà ăn", address: "Số 3 Đường DEMO, Hà Nội" }
   - alias: nha-may-x
     name: Nhà máy DEMO X
     kind: factory
-    profile: { shifts: [lunch, dinner] }
+    profile: { kind: factory, meal_slots: [lunch, dinner], sla_hours: 12, disclosure_daily: false }
     portions: { lunch: 400, dinner: 200 }
     delivery_point: { code: DP-X, name: "Nhà máy DEMO X - nhà ăn ca", address: "KCN DEMO, Hà Nội" }
 

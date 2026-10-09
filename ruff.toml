@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 line-length = 120
 target-version = "py312"
-src = ["services/api"]
+src = ["services/api", "cli"]
 
 [lint]
 select = ["E", "F", "W", "I", "B", "UP", "S", "SIM", "RUF"]
@@ -16,4 +16,4 @@ ignore = [
 
 [lint.flake8-bugbear]
 # FastAPI declares parameters through these calls in argument defaults.
-extend-immutable-calls = ["fastapi.Query", "fastapi.File", "fastapi.Depends", "fastapi.Form", "fastapi.Body"]
+extend-immutable-calls = ["fastapi.Query", "fastapi.File", "fastapi.Depends", "fastapi.Form", "fastapi.Body", "typer.Option", "typer.Argument"]

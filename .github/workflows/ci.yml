@@ -38,3 +38,12 @@ jobs:
       - name: pytest (unit)
         working-directory: services/api
         run: uv run --python 3.12 pytest -m "not integration"
+
+  cli-tests:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+      - name: pytest (CLI unit)
+        working-directory: cli
+        run: uv run --python 3.12 pytest -m "not e2e"

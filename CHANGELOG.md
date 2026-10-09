@@ -56,6 +56,14 @@ and the project uses [Semantic Versioning](https://semver.org/).
   start by business key, recall notices per delivery point carrying the audit anchor,
   reconcilers for missing processes, escalation flags and missed notices.
 - `outbreak` seed scenario; `GET /api/v1/lots`.
+- Customer portal API (`/api/v1/portal/*`): deliveries, complaints (create/list), recall notices
+  (list/acknowledge), scoped by the organizations in the token; references to another
+  organization's delivery point or file answer 404.
+- P6: complaint answer deadline from the customer profile (`sla_hours`), worker sweep flags
+  overdue complaints (no BPMN).
+- Customer differences (school vs factory) are profile data, not code branches.
+- CLI `metrace` (device-flow login, staff only, `whoami`, `trace`, `shipments list`, `incidents list`);
+  lineage accepts business codes as well as UUIDs.
 
 ### Security
 - The CI-only `metrace-test` client only exists when `KC_OVERLAYS=test`; demos remove it.

@@ -33,6 +33,9 @@ jobs:
         run: scripts/smoke-core.sh
       - name: integration tests
         run: make test-integration
+      - name: CLI end to end
+        working-directory: cli
+        run: set -a && source ../.env && set +a && uv run --python 3.12 pytest -m e2e
       - name: second start is idempotent (one-shots re-run cleanly)
         run: |
           KC_OVERLAYS=test docker compose -f compose.yaml -f compose.dev-ports.yaml up -d --wait --wait-timeout 300

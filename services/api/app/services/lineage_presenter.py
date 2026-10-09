@@ -28,9 +28,32 @@ MODEL_BY_TYPE = {
 }
 
 
+CODE_COLUMN = {
+    "supplier": Supplier.code,
+    "lot": IngredientLot.lot_code,
+    "batch": CookingBatch.batch_code,
+    "shipment": Shipment.code,
+    "delivery_point": DeliveryPoint.code,
+    "asset": Asset.code,
+}
+
+
 def node_exists(session: Session, node: NodeRef) -> bool:
     model = MODEL_BY_TYPE.get(node.type)
     return model is not None and session.get(model, node.id) is not None
+
+
+def resolve_node(session: Session, node_type: str, ref: str) -> NodeRef | None:
+    """A node by UUID or by its business code (e.g. LOT-20261009-GA, B-20261009-lunch-COM)."""
+    try:
+        node = NodeRef(node_type, uuid.UUID(ref))
+        return node if node_exists(session, node) else None
+    except ValueError:
+        model, column = MODEL_BY_TYPE.get(node_type), CODE_COLUMN.get(node_type)
+        if model is None:
+            return None
+        found = session.scalar(select(model.id).where(column == ref))
+        return NodeRef(node_type, found) if found else None
 
 
 def _labels(session: Session, result: LineageResult) -> dict[NodeRef, dict[str, Any]]:

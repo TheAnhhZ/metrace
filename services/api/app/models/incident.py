@@ -41,6 +41,9 @@ class Complaint(UuidPrimaryKey, Timestamps, Base):
         one_of("channel", ComplaintChannel),
         one_of("status", ComplaintStatus),
         one_of("meal_slot", MealSlot),
+        Index(
+            "ix_complaint_sla_open", "sla_due_at", postgresql_where=text("NOT sla_breached AND status <> 'resolved'")
+        ),
     )
 
     code: Mapped[str] = mapped_column(String(40), unique=True)
@@ -54,6 +57,7 @@ class Complaint(UuidPrimaryKey, Timestamps, Base):
     status: Mapped[str] = mapped_column(String(20), default=ComplaintStatus.OPEN)
     reported_by: Mapped[str] = mapped_column(String(100))
     sla_due_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    sla_breached: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     file_ids: Mapped[list[uuid.UUID]] = mapped_column(ARRAY(UUID(as_uuid=True)), default=list)
 

@@ -37,6 +37,7 @@ class ComplaintOut(_Read):
     status: str
     reported_by: str
     sla_due_at: datetime
+    sla_breached: bool
     created_at: datetime
 
 

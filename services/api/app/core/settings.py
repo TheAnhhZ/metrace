@@ -8,7 +8,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="", case_sensitive=False)
+    model_config = SettingsConfigDict(env_prefix="", case_sensitive=False, env_ignore_empty=True)
 
     # OIDC: tokens carry the PUBLIC issuer (browser origin), while keys are
     # fetched over the internal docker network.
@@ -34,6 +34,9 @@ class Settings(BaseSettings):
 
     # Incident triage SLA before the director is pulled in (ISO 8601; demo uses PT1M).
     incident_triage_sla: str = "PT30M"
+
+    # P6 complaint SLA comes from the customer profile (sla_hours); demos can shorten it.
+    complaint_sla_override_minutes: int | None = None
 
     # Business time zone: DB stores UTC, service dates are computed here.
     business_tz: str = "Asia/Ho_Chi_Minh"

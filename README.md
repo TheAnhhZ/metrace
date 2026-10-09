@@ -46,6 +46,26 @@ Demo accounts (password is `DEMO_USER_PASSWORD` in your `.env`):
 `cskh-thu`, `director-nam` (internal) and `truong-a`, `truong-b`, `truong-c`,
 `nha-may-x` (customer staff, one per customer organization).
 
+## Command line
+
+```bash
+uv tool install ./cli
+metrace login                       # device flow: approve in the browser (staff accounts only)
+metrace trace lot LOT-20261008-XUONG-LON --direction forward
+metrace shipments list --status held
+metrace incidents list
+```
+
+`METRACE_URL` (default `http://localhost:9080`) points the CLI at another gateway.
+Tokens are cached in `~/.config/metrace/token.json` (mode 600).
+
+## Demo data
+
+```bash
+make demo-reset                     # fresh "today": yesterday delivered, today's lunch ready
+scripts/demo-reset.sh baseline,outbreak   # plus two complaints about yesterday's lunch
+```
+
 ## Development
 
 ```bash

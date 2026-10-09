@@ -4,7 +4,7 @@
 #3 cluster suggestions: plain SQL group-by, a SUGGESTION that QA confirms."""
 
 import uuid
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
@@ -13,8 +13,9 @@ from app.core.audit_hash_chain import append_audit
 from app.core.business_time import utcnow
 from app.core.database import get_or_404
 from app.core.principal import Principal
+from app.core.settings import get_settings
 from app.models.incident import Complaint
-from app.models.kitchen_and_customers import DeliveryPoint
+from app.models.kitchen_and_customers import CustomerOrg, DeliveryPoint
 from app.schemas.incident import ComplaintIn
 from app.services import lineage_query
 from app.services.lineage_presenter import present
@@ -42,20 +43,31 @@ CLUSTER_SQL = text(
 )
 
 
-def create_complaint(session: Session, principal: Principal, req: ComplaintIn) -> Complaint:
+def sla_due(session: Session, customer_org_id) -> datetime:
+    override = get_settings().complaint_sla_override_minutes
+    if override:
+        return utcnow() + timedelta(minutes=override)
+    org = session.get(CustomerOrg, customer_org_id)
+    return utcnow() + timedelta(hours=int((org.profile or {}).get("sla_hours", SLA_HOURS)))
+
+
+def create_complaint(
+    session: Session, principal: Principal, req: ComplaintIn, *, channel: str | None = None, file_ids=()
+) -> Complaint:
     point = get_or_404(session, DeliveryPoint, req.delivery_point_id, "delivery point")
     seq = session.scalar(select(func.count()).select_from(Complaint)) + 1
     complaint = Complaint(
         code=f"PA-{utcnow():%y%m%d}-{seq:03d}-{uuid.uuid4().hex[:3].upper()}",
         customer_org_id=point.customer_org_id,
         delivery_point_id=point.id,
-        channel=req.channel,
+        channel=channel or req.channel,
         service_date=req.service_date,
         meal_slot=req.meal_slot,
         affected_count=req.affected_count,
         description=req.description,
         reported_by=principal.username,
-        sla_due_at=utcnow() + timedelta(hours=SLA_HOURS),
+        sla_due_at=sla_due(session, point.customer_org_id),
+        file_ids=list(file_ids),
     )
     session.add(complaint)
     session.flush()
