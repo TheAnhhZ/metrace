@@ -11,22 +11,22 @@ from app.models.kitchen_and_customers import CustomerOrg, DeliveryPoint
 from app.models.shipment import Shipment
 from app.schemas.incident import CloseRequestOut, ComplaintOut, IncidentDetailOut, IncidentOut, LockOut
 from app.services import lineage_query
-from app.services.lineage_query import NodeRef
-from app.services.lock_service import WRITER_WALK, recall_since
+from app.services.lineage_query import WRITER_WALK, NodeRef, any_of
+from app.services.lock_service import recall_since
 
 
 def affected_shipments(session: Session, incident: Incident, locks: list[Lock]) -> list[dict]:
     targets = [NodeRef(lock.target_type, lock.target_id) for lock in locks]
     if not targets:
         return []
-    # Same walk and window as the lock and the notices, so the three never disagree.
+    # Same walk and window as the lock and the notices. Held trucks show whatever their date.
     down = lineage_query.forward_many(session, targets, **WRITER_WALK)
     rows = session.execute(
         select(Shipment, DeliveryPoint.name, CustomerOrg.kc_org_alias)
         .join(DeliveryPoint, DeliveryPoint.id == Shipment.delivery_point_id)
         .join(CustomerOrg, CustomerOrg.id == DeliveryPoint.customer_org_id)
         .where(
-            Shipment.id.in_(down.ids("shipment")),
+            any_of(Shipment.id, down.ids("shipment")),
             Shipment.status.in_(["planned", "ready", "held"])
             | (Shipment.service_date >= recall_since(incident.opened_at)),
         )

@@ -15,13 +15,23 @@ from collections.abc import Iterable
 from dataclasses import dataclass, field
 from typing import Literal
 
-from sqlalchemy import text
+from sqlalchemy import ColumnElement, any_, bindparam, text
+from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Session
 
 Direction = Literal["forward", "backward"]
 DEFAULT_MAX_DEPTH = 8
 MAX_DEPTH_CAP = 12
 DEFAULT_MAX_NODES = 300
+# Writers (locks, guards, notices) see every reachable node and skip edges they do not draw.
+WRITER_WALK = {"max_depth": MAX_DEPTH_CAP, "max_nodes": None, "with_edges": False}
+
+
+def any_of(column, ids: Iterable[uuid.UUID]) -> ColumnElement[bool]:
+    """`column = ANY(:ids)` with ONE array parameter. An IN list binds one parameter per id, and
+    PostgreSQL drivers refuse more than 65,535: a long history must not break a recall."""
+    return column == any_(bindparam("ids", list(ids), type_=ARRAY(PG_UUID(as_uuid=True)), unique=True))
 
 
 @dataclass(frozen=True, order=True)

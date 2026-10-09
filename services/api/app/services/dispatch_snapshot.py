@@ -17,13 +17,14 @@ from app.services.lineage_query import NodeRef
 
 def _form1_complete(session: Session, batch_id) -> bool:
     """Every lot upstream of the batch came from an accepted receiving with documents."""
-    lot_ids = lineage_query.backward(session, NodeRef("batch", batch_id)).ids("lot")
-    if not lot_ids:
+    walk = lineage_query.backward(session, NodeRef("batch", batch_id), **lineage_query.WRITER_WALK)
+    lot_ids = walk.ids("lot")
+    if walk.truncated or not lot_ids:  # an incomplete walk cannot prove Form 1 (fail closed)
         return False
     rows = session.execute(
         select(Receiving.decision, Receiving.document_file_ids)
         .join(IngredientLot, IngredientLot.receiving_id == Receiving.id)
-        .where(IngredientLot.id.in_(lot_ids))
+        .where(lineage_query.any_of(IngredientLot.id, lot_ids))
     ).all()
     return all(decision == ReceivingDecision.ACCEPTED and docs for decision, docs in rows)
 

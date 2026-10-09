@@ -70,6 +70,9 @@ def add_input(session: Session, principal: Principal, batch_id: uuid.UUID, req: 
         source = get_or_404(session, CookingBatch, req.input_batch_id, "batch")
         if source.id == batch.id or source.status != BatchStatus.FINISHED:
             raise _conflict("Input batch must be another, finished batch")
+        # Cooked food is not carried over to another service day (and lineage chains stay short).
+        if source.service_date != batch.service_date:
+            raise _conflict("Input batch must be cooked for the same service day")
     lock_guard.assert_input_allowed(session, principal, batch, req.lot_id, req.input_batch_id)
 
     row = BatchInput(

@@ -39,14 +39,14 @@ def active_locks_on(session: Session, nodes: Iterable[NodeRef]) -> list[dict]:
     rows = session.execute(
         select(Lock.target_type, Lock.target_id, Incident.code)
         .join(Incident, Incident.id == Lock.incident_id)
-        .where(Lock.active, Lock.target_id.in_([n.id for n in nodes]))
+        .where(Lock.active, lineage_query.any_of(Lock.target_id, [n.id for n in nodes]))
     ).all()
     wanted = {(n.type, n.id) for n in nodes}
     return [{"target": f"{t}:{i}", "incident": code} for t, i, code in rows if (t, i) in wanted]
 
 
 def _upstream(session: Session, roots: list[NodeRef]) -> lineage_query.LineageResult:
-    return lineage_query.backward_many(session, roots, max_depth=lineage_query.MAX_DEPTH_CAP)
+    return lineage_query.backward_many(session, roots, **lineage_query.WRITER_WALK)
 
 
 def _check_upstream(session: Session, roots: list[NodeRef], rule: str, code: RC) -> RuleResult:

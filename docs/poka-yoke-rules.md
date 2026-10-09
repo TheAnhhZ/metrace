@@ -66,6 +66,9 @@ Defaults are the seed values (`services/api/app/seed/master-data.yaml`).
 | `P2_CORE_TEMP_BELOW_MIN` | Core temperature below `core_temp_min_c`, or not recorded |
 | `P2_INPUT_LOCKED` | An input, or anything upstream of the batch, is locked by an incident; also when the lineage cannot be walked (fail closed) |
 
+An input batch (e.g. a broth) must be another finished batch cooked for the
+same service day, otherwise `409`: cooked food is not carried over to another day.
+
 ### P3 — Dispatch
 | Code | Blocks when |
 |---|---|

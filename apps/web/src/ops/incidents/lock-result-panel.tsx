@@ -16,7 +16,7 @@ export function LockResultPanel({ result }: { result: LockResult }) {
       </ul>
       {result.truncated && (
         <p role="alert" className="rounded-lg bg-amber-100 p-3 text-lg font-bold text-amber-900">
-          Chuỗi truy xuất sâu hơn giới hạn: đã tạm giữ mọi chuyến chưa xuất từ hôm nay (an toàn trước).
+          Chuỗi truy xuất sâu hơn giới hạn: đã tạm giữ mọi chuyến chưa xuất đã có hàng, từ hôm nay (an toàn trước).
         </p>
       )}
       {gone > 0 && (

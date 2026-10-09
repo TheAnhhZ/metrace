@@ -97,15 +97,19 @@ def test_full_walk_holds_only_trucks_on_the_lineage(app_session, graph):
 def test_too_deep_walk_fails_closed_only_for_food_not_yet_served(app_session, graph):
     sh1 = app_session.get(Shipment, graph.sh1.id)
     _chain_beyond_depth_cap(app_session, graph.b1)
-    stale = _truck(app_session, sh1, service_date() - timedelta(days=2))
-    upcoming = _truck(app_session, sh1, service_date() + timedelta(days=1))
+    tomorrow, earlier = service_date() + timedelta(days=1), service_date() - timedelta(days=2)
+    stale_on_walk = _truck(app_session, sh1, earlier, batch_id=graph.b1.id)  # seen by the walk: held
+    stale_elsewhere = _truck(app_session, sh1, earlier, batch_id=graph.b2.id)  # old plan, not at risk
+    loaded_elsewhere = _truck(app_session, sh1, tomorrow, batch_id=graph.b2.id)  # food maybe out of sight
+    empty_elsewhere = _truck(app_session, sh1, tomorrow)  # no food yet: checked when food is added
 
     result = lock_service.apply(app_session, _incident(app_session), [graph.l2], lock_lots=False, actor="qa-test")
 
+    held = set(result.held_shipments)
     assert result.truncated
-    assert {graph.sh1.id, upcoming.id} <= set(result.held_shipments)
-    assert stale.id not in result.held_shipments  # an old plan is not food at risk
-    assert app_session.get(Shipment, stale.id).status == ShipmentStatus.PLANNED
+    assert {graph.sh1.id, stale_on_walk.id, loaded_elsewhere.id} <= held
+    assert not {stale_elsewhere.id, empty_elsewhere.id} & held
+    assert app_session.get(Shipment, empty_elsewhere.id).status == ShipmentStatus.PLANNED
 
 
 def _notice(session, incident: Incident) -> RecallNotice:
@@ -127,9 +131,11 @@ def test_notice_keeps_its_ack_until_what_the_customer_must_do_changes(app_sessio
     sh1.status = ShipmentStatus.DELIVERED  # same food, same action: nothing new to acknowledge
     app_session.flush()
     upsert_notices(app_session, incident.id, anchor=(notice.audit_seq + 1, "b" * 64))
-    notice = _notice(app_session, incident)
-    assert notice.acknowledged_at is not None
-    assert all("status" not in s for s in notice.content["shipments"])
+    unchanged = _notice(app_session, incident)
+    assert unchanged.acknowledged_at is not None
+    assert unchanged.audit_seq == notice.audit_seq  # nothing re-issued, so the anchor stays
+    assert all("status" not in s for s in unchanged.content["shipments"])
+    notice = unchanged
 
     # Another truck with the suspect food: the customer must act again, under the new anchor.
     _truck(app_session, sh1, service_date(), status=ShipmentStatus.DISPATCHED, batch_id=graph.b1.id)

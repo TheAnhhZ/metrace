@@ -136,7 +136,6 @@ export interface NoticeShipment {
   shipment: string;
   service_date: string;
   meal_slot: string;
-  status: string;
   /** hold = not yet gone, keep it; recall = already dispatched/delivered, take it back. */
   action: "hold" | "recall";
   items: { dish: string; batch: string; portions: number }[];

@@ -28,7 +28,7 @@ def coverage(session: Session, batch_ids: set) -> dict:
     No affected portions at all => coverage is None (nothing to locate), not 100 %."""
     served = session.execute(
         select(CookingBatch.id, CookingBatch.batch_code, CookingBatch.portions_produced).where(
-            CookingBatch.id.in_(batch_ids), CookingBatch.portions_produced > 0
+            lineage_query.any_of(CookingBatch.id, batch_ids), CookingBatch.portions_produced > 0
         )
     ).all()
     shipped = dict(
@@ -36,7 +36,7 @@ def coverage(session: Session, batch_ids: set) -> dict:
             select(ShipmentItem.batch_id, func.sum(ShipmentItem.portions))
             .join(Shipment, Shipment.id == ShipmentItem.shipment_id)
             .where(
-                ShipmentItem.batch_id.in_([b.id for b in served]),
+                lineage_query.any_of(ShipmentItem.batch_id, [b.id for b in served]),
                 Shipment.status.in_([ShipmentStatus.DISPATCHED, ShipmentStatus.DELIVERED]),
             )
             .group_by(ShipmentItem.batch_id)
@@ -57,8 +57,8 @@ def coverage(session: Session, batch_ids: set) -> dict:
 
 def run_drill(session: Session, principal: Principal, root: NodeRef) -> dict:
     started = time.monotonic()
-    down = lineage_query.forward(session, root, **lock_service.WRITER_WALK)
-    up = lineage_query.backward(session, root, **lock_service.WRITER_WALK)
+    down = lineage_query.forward(session, root, **lineage_query.WRITER_WALK)
+    up = lineage_query.backward(session, root, **lineage_query.WRITER_WALK)
     trace_ms = int((time.monotonic() - started) * 1000)
 
     preview = None

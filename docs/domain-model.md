@@ -85,11 +85,14 @@ a recursive CTE (cycle guard, depth cap 12, node cap 300). When a cap cuts the
 walk the response says `truncated: true`, and any write based on the walk
 (locks, dispatch guards) must refuse to proceed.
 
-Writers (locks, recall notices, the incident view, the recall drill) walk with
+Writers (locks, guards, the Form 1 check, recall notices, the incident view, the recall drill) walk with
 no node cap: the SQL returns every reachable node anyway, so the node cap only
 limits what a screen draws. Only a chain deeper than 12 levels can cut their
-walk. A lock then fails closed: it holds every open truck dated today or later,
-not only the ones it saw, and the lock result says `truncated: true`. Recall
+walk. A lock then fails closed: it holds every open truck dated today or later
+that already carries food, not only the ones it saw, and the lock result says
+`truncated: true`. A batch can only take another batch cooked for the same
+service day as input (no carry-over), so chains stay far below 12 levels. Large
+id sets are bound as one array parameter (`= ANY(:ids)`), never as an IN list. Recall
 notices cover deliveries from `RECALL_WINDOW_DAYS` service days before the
 incident opened, so a notice never shrinks on a later day. A notice asks to be
 acknowledged again only when what the customer must do changes (another truck,

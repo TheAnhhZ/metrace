@@ -5,6 +5,7 @@
 import time
 import uuid
 from concurrent.futures import ThreadPoolExecutor
+from datetime import timedelta
 
 import httpx
 import pytest
@@ -55,7 +56,7 @@ def fresh_lot(master) -> str:
     return rec["lots"][0]["id"]
 
 
-def cooked_batch(master, lot_id: str) -> dict:
+def cooked_batch(master, lot_id: str, day=None) -> dict:
     batch = ok(
         call(
             "POST",
@@ -63,7 +64,7 @@ def cooked_batch(master, lot_id: str) -> dict:
             "chef-hung",
             json={
                 "dish_id": master["d"]["GA-RANG"]["id"],
-                "service_date": str(service_date()),
+                "service_date": str(day or service_date()),
                 "meal_slot": "dinner",
                 "portions_planned": 40,
             },
@@ -180,3 +181,28 @@ def test_lock_and_dispatch_race_never_lets_food_out_unnoticed(master):
             time.sleep(0.3)
         assert notices
     close(incident_id)
+
+
+def test_cooked_food_is_not_carried_over_to_another_service_day(master):
+    yesterday = cooked_batch(master, fresh_lot(master), day=service_date() - timedelta(days=1))
+    today = cooked_batch(master, fresh_lot(master))  # finished; a new cooking batch reuses it below
+    batch = ok(
+        call(
+            "POST",
+            "/batches",
+            "chef-hung",
+            json={
+                "dish_id": master["d"]["GA-RANG"]["id"],
+                "service_date": str(service_date()),
+                "meal_slot": "dinner",
+                "portions_planned": 10,
+            },
+        ),
+        201,
+    )
+    late = call(
+        "POST", f"/batches/{batch['id']}/inputs", "chef-hung", json={"input_batch_id": yesterday["id"], "qty_kg": "1"}
+    )
+    assert late.status_code == 409 and "same service day" in late.json()["error"]["message"]
+    same_day = {"input_batch_id": today["id"], "qty_kg": "1"}
+    assert call("POST", f"/batches/{batch['id']}/inputs", "chef-hung", json=same_day).status_code == 201

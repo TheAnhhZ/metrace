@@ -14,7 +14,7 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 
-from sqlalchemy import or_, select, update
+from sqlalchemy import and_, or_, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
@@ -26,14 +26,12 @@ from app.core.reason_codes import ReasonCode
 from app.core.settings import get_settings
 from app.models.enums import ShipmentStatus
 from app.models.incident import Incident, Lock
-from app.models.shipment import Shipment
+from app.models.shipment import Shipment, ShipmentItem
 from app.services import lineage_query
-from app.services.lineage_query import NodeRef
+from app.services.lineage_query import WRITER_WALK, NodeRef, any_of
 from app.services.lock_guard import serialize_lock_decisions
 
 LOCKABLE = ("batch", "lot", "supplier")
-# Writers see every reachable node (no node cap) and skip edges they do not draw.
-WRITER_WALK = {"max_depth": lineage_query.MAX_DEPTH_CAP, "max_nodes": None, "with_edges": False}
 
 
 @dataclass
@@ -45,7 +43,7 @@ class LockResult:
     audit_head: tuple[int, str]
     elapsed_ms: int
     blast_radius: dict = field(default_factory=dict)
-    truncated: bool = False  # deeper than the depth cap: every open truck from today on was held
+    truncated: bool = False  # deeper than the depth cap: every loaded open truck from today on was held
 
 
 def apply(session: Session, incident: Incident, suspects: list[NodeRef], lock_lots: bool, actor: str) -> LockResult:
@@ -81,11 +79,13 @@ def apply(session: Session, incident: Incident, suspects: list[NodeRef], lock_lo
             .on_conflict_do_nothing(index_elements=["incident_id", "target_type", "target_id"], index_where=Lock.active)
         )
     shipment_ids = sorted(down.ids("shipment"))
-    affected = Shipment.id.in_(shipment_ids)
+    affected = any_of(Shipment.id, shipment_ids)
     if truncated:
         # Deeper than the depth cap: some affected trucks may be out of sight. Fail closed for food
-        # not yet served (today onwards), never for a backlog of stale plans.
-        affected = or_(affected, Shipment.service_date >= service_date())
+        # not yet served: trucks from today on that already carry food. Empty or stale plans stay
+        # as they are; adding food and dispatching are checked again by the guards.
+        carries_food = select(ShipmentItem.shipment_id).where(ShipmentItem.shipment_id == Shipment.id).exists()
+        affected = or_(affected, and_(Shipment.service_date >= service_date(), carries_food))
     pending = session.scalars(
         select(Shipment)
         .where(Shipment.status.in_([ShipmentStatus.PLANNED, ShipmentStatus.READY]), affected)
@@ -99,7 +99,7 @@ def apply(session: Session, incident: Incident, suspects: list[NodeRef], lock_lo
         set(
             session.scalars(
                 select(Shipment.id).where(
-                    Shipment.id.in_(shipment_ids),
+                    any_of(Shipment.id, shipment_ids),
                     Shipment.status.in_([ShipmentStatus.DISPATCHED, ShipmentStatus.DELIVERED]),
                     Shipment.service_date >= recall_since(incident.opened_at),
                 )

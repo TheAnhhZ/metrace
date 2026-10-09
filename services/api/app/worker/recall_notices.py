@@ -23,8 +23,8 @@ from app.models.incident import Incident, Lock, RecallNotice
 from app.models.kitchen_and_customers import DeliveryPoint
 from app.models.shipment import Shipment, ShipmentItem
 from app.services import lineage_query
-from app.services.lineage_query import NodeRef
-from app.services.lock_service import WRITER_WALK, recall_since
+from app.services.lineage_query import WRITER_WALK, NodeRef, any_of
+from app.services.lock_service import recall_since
 
 log = logging.getLogger("metrace.worker.notices")
 
@@ -47,8 +47,8 @@ def _affected(session: Session, incident: Incident):
         .join(CookingBatch, CookingBatch.id == ShipmentItem.batch_id)
         .join(Dish, Dish.id == CookingBatch.dish_id)
         .where(
-            Shipment.id.in_(down.ids("shipment")),
-            ShipmentItem.batch_id.in_(down.ids("batch")),
+            any_of(Shipment.id, down.ids("shipment")),
+            any_of(ShipmentItem.batch_id, down.ids("batch")),
             Shipment.service_date >= recall_since(incident.opened_at),
         )
         .order_by(Shipment.code, CookingBatch.batch_code)
