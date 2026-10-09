@@ -1,0 +1,17 @@
+/* SPDX-FileCopyrightText: The metrace Authors */
+/* SPDX-License-Identifier: Apache-2.0 */
+@import "tailwindcss";
+
+/* Kitchen tablets are read at arm's length: slightly larger root size scales every rem-based utility. */
+@layer base {
+  html {
+    font-size: 17px;
+  }
+  body {
+    @apply bg-slate-100 text-slate-900 antialiased;
+  }
+  button:not(:disabled),
+  [role="button"] {
+    cursor: pointer;
+  }
+}

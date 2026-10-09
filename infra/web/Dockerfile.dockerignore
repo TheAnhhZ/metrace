@@ -1,0 +1,18 @@
+# SPDX-FileCopyrightText: The metrace Authors
+# SPDX-License-Identifier: Apache-2.0
+#
+# Build-context filter for infra/web/Dockerfile (context = repo root). Keeps secrets,
+# host-built artifacts and unrelated services out of the context sent to the daemon.
+.git
+.env
+.env.*
+plans
+reports
+services
+workflows
+docs
+**/node_modules
+**/dist
+**/.vite
+**/.ruff_cache
+**/__pycache__

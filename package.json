@@ -1,0 +1,21 @@
+{
+  "name": "metrace",
+  "private": true,
+  "license": "Apache-2.0",
+  "description": "metrace monorepo: web app and typed API client",
+  "workspaces": [
+    "apps/web",
+    "packages/api-client"
+  ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "npm run dev --workspace @metrace/web",
+    "build": "npm run build --workspace @metrace/web",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "gen:api": "bash scripts/generate-api-client.sh",
+    "check:caniuse-lite": "bash scripts/check-caniuse-lite.sh"
+  }
+}

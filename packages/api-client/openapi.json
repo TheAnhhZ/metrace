@@ -851,6 +851,56 @@
             }
           }
         }
+      },
+      "get": {
+        "tags": [
+          "kitchen"
+        ],
+        "summary": "List Batch Inputs",
+        "operationId": "list_batch_inputs_api_v1_batches__batch_id__inputs_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Batch Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BatchInputOut"
+                  },
+                  "title": "Response List Batch Inputs Api V1 Batches  Batch Id  Inputs Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/batches/{batch_id}/finish": {
@@ -2554,6 +2604,98 @@
         ],
         "title": "BatchInputIn"
       },
+      "BatchInputOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "lot_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lot Id"
+          },
+          "lot_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lot Code"
+          },
+          "input_batch_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Input Batch Id"
+          },
+          "input_batch_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Input Batch Code"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "qty_kg": {
+            "type": "string",
+            "title": "Qty Kg"
+          },
+          "added_by": {
+            "type": "string",
+            "title": "Added By"
+          },
+          "added_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Added At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "lot_id",
+          "lot_code",
+          "input_batch_id",
+          "input_batch_code",
+          "label",
+          "qty_kg",
+          "added_by",
+          "added_at"
+        ],
+        "title": "BatchInputOut"
+      },
       "BatchOut": {
         "properties": {
           "id": {
@@ -3256,6 +3398,81 @@
           "uploaded_at"
         ],
         "title": "FileOut"
+      },
+      "Finding": {
+        "properties": {
+          "rule": {
+            "type": "string",
+            "title": "Rule"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "measured": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Measured"
+          },
+          "limit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "basis": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Basis"
+          },
+          "basis_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Basis Type"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "rule",
+          "code"
+        ],
+        "title": "Finding",
+        "description": "One Poka-yoke result. Extra keys carry context (measured, limit, unit, basis, basis_type, batch, ...)."
       },
       "HTTPValidationError": {
         "properties": {
@@ -4383,8 +4600,7 @@
         "properties": {
           "warnings": {
             "items": {
-              "additionalProperties": true,
-              "type": "object"
+              "$ref": "#/components/schemas/Finding"
             },
             "type": "array",
             "title": "Warnings",
@@ -4723,8 +4939,7 @@
           },
           "blockers": {
             "items": {
-              "additionalProperties": true,
-              "type": "object"
+              "$ref": "#/components/schemas/Finding"
             },
             "type": "array",
             "title": "Blockers",

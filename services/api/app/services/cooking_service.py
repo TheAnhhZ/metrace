@@ -5,7 +5,7 @@
 import uuid
 
 from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 
 from app.core.audit_hash_chain import append_audit
 from app.core.business_time import utcnow
@@ -16,7 +16,7 @@ from app.core.reason_codes import ReasonCode
 from app.models.cooking import BatchInput, CookingBatch, Dish
 from app.models.enums import BatchStatus, LotStatus
 from app.models.kitchen_and_customers import Kitchen
-from app.models.supplier_and_lots import IngredientLot
+from app.models.supplier_and_lots import Ingredient, IngredientLot
 from app.rules.cooking_rules import FinishSnapshot, check_finish
 from app.rules.thresholds import load_thresholds
 from app.schemas.kitchen_operations import BatchFinishIn, BatchIn, BatchInputIn
@@ -100,7 +100,9 @@ def finish_batch(session: Session, principal: Principal, batch_id: uuid.UUID, re
         raise _conflict("Batch is not cooking")
     has_inputs = session.scalar(select(BatchInput.id).where(BatchInput.batch_id == batch.id).limit(1))
     if has_inputs is None:
-        raise AppError(422, ReasonCode.VALIDATION_ERROR, "Record the inputs before finishing (traceability)")
+        raise AppError(
+            422, ReasonCode.P2_MISSING_INPUTS, "Record the inputs before finishing (traceability)", rule="P2"
+        )
     lock_guard.assert_batch_not_locked(session, principal, batch)
     now = utcnow()
     result = check_finish(
@@ -122,3 +124,31 @@ def finish_batch(session: Session, principal: Principal, batch_id: uuid.UUID, re
     )
     session.commit()
     return batch
+
+
+def list_inputs(session: Session, batch_id: uuid.UUID) -> list[dict]:
+    """What went into a batch: lots (with ingredient) and intermediate batches (with dish)."""
+    source = aliased(CookingBatch)
+    rows = session.execute(
+        select(BatchInput, IngredientLot.lot_code, Ingredient.name, source.batch_code, Dish.name)
+        .outerjoin(IngredientLot, IngredientLot.id == BatchInput.lot_id)
+        .outerjoin(Ingredient, Ingredient.id == IngredientLot.ingredient_id)
+        .outerjoin(source, source.id == BatchInput.input_batch_id)
+        .outerjoin(Dish, Dish.id == source.dish_id)
+        .where(BatchInput.batch_id == batch_id)
+        .order_by(BatchInput.added_at)
+    ).all()
+    return [
+        {
+            "id": row.id,
+            "lot_id": row.lot_id,
+            "lot_code": lot_code,
+            "input_batch_id": row.input_batch_id,
+            "input_batch_code": batch_code,
+            "label": f"{lot_code} · {ingredient}" if lot_code else f"{batch_code} · {dish}",
+            "qty_kg": row.qty_kg,
+            "added_by": row.added_by,
+            "added_at": row.added_at,
+        }
+        for row, lot_code, ingredient, batch_code, dish in rows
+    ]

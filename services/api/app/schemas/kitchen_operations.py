@@ -16,8 +16,22 @@ class _Read(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class Finding(BaseModel):
+    """One Poka-yoke result. Extra keys carry context (measured, limit, unit, basis, basis_type, batch, ...)."""
+
+    model_config = ConfigDict(extra="allow")
+
+    rule: str
+    code: str
+    measured: str | None = None
+    limit: str | None = None
+    unit: str | None = None
+    basis: str | None = None
+    basis_type: str | None = None
+
+
 class WithWarnings(BaseModel):
-    warnings: list[dict[str, Any]] = []
+    warnings: list[Finding] = []
 
 
 # -- receiving (Mẫu 1) ----------------------------------------------------------
@@ -78,6 +92,18 @@ class BatchInputIn(BaseModel):
 class BatchFinishIn(BaseModel):
     core_temp_c: Decimal
     portions_produced: int = Field(ge=0)
+
+
+class BatchInputOut(BaseModel):
+    id: uuid.UUID
+    lot_id: uuid.UUID | None
+    lot_code: str | None
+    input_batch_id: uuid.UUID | None
+    input_batch_code: str | None
+    label: str
+    qty_kg: Decimal
+    added_by: str
+    added_at: datetime | None
 
 
 class BatchOut(_Read):
@@ -160,7 +186,7 @@ class ShipmentOut(BaseModel):
     status: str
     dispatched_at: datetime | None
     items: list[ShipmentItemOut]
-    blockers: list[dict[str, Any]] = Field(description="What P3 would block right now (empty = ready to go)")
+    blockers: list[Finding] = Field(description="What P3 would block right now (empty = ready to go)")
 
 
 class MealStepOut(BaseModel):

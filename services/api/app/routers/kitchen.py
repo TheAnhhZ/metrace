@@ -11,12 +11,13 @@ from sqlalchemy import select
 from app.core.authentication import CurrentPrincipal
 from app.core.authorization import internal_router, require_any_role
 from app.core.business_time import service_date, utcnow
-from app.core.database import DbSession
+from app.core.database import DbSession, get_or_404
 from app.models.cooking import BatchInput, CookingBatch
 from app.schemas.kitchen_operations import (
     BatchFinishIn,
     BatchIn,
     BatchInputIn,
+    BatchInputOut,
     BatchOut,
     ReceivingIn,
     ReceivingOut,
@@ -63,6 +64,12 @@ def add_batch_input(batch_id: uuid.UUID, req: BatchInputIn, session: DbSession, 
         "input_batch_id": row.input_batch_id,
         "qty_kg": row.qty_kg,
     }
+
+
+@router.get("/batches/{batch_id}/inputs", response_model=list[BatchInputOut])
+def list_batch_inputs(batch_id: uuid.UUID, session: DbSession):
+    get_or_404(session, CookingBatch, batch_id, "batch")
+    return cooking_service.list_inputs(session, batch_id)
 
 
 @router.post("/batches/{batch_id}/finish", response_model=BatchOut, dependencies=CHEF)

@@ -207,13 +207,13 @@ services:
       start_period: 15s
     mem_limit: 256m
 
-  # Static SPA (placeholder until the web app is scaffolded).
+  # The web app (one SPA: /ops for staff, /portal for customers), static behind the gateway.
   web:
     <<: *defaults
-    image: nginx:1.29-bookworm
-    volumes:
-      - ./infra/web/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./infra/web/placeholder:/usr/share/nginx/html:ro
+    build:
+      context: .
+      dockerfile: infra/web/Dockerfile
+    image: metrace/web:dev
     healthcheck:
       test: ["CMD", "curl", "-fsS", "-o", "/dev/null", "http://127.0.0.1/healthz"]
       interval: 10s
