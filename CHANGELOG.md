@@ -48,6 +48,14 @@ and the project uses [Semantic Versioning](https://semver.org/).
   dispatch and sample discard.
 - `make demo-reset`: fresh "today" in about 10 seconds; seeded receivings carry delivery notes.
 - `docs/poka-yoke-rules.md`.
+- Incidents: complaints (internal channel), #3 cluster suggestions (SQL, QA confirms), incidents,
+  confirm suspects => per-incident locks applied in one transaction (pending shipments held,
+  fail closed on incomplete lineage), four-eyes close (approver role, different person),
+  each incident releases only its own locks.
+- Worker: BPMN `incident-recall` (triage SLA timer escalates to the director), idempotent process
+  start by business key, recall notices per delivery point carrying the audit anchor,
+  reconcilers for missing processes, escalation flags and missed notices.
+- `outbreak` seed scenario; `GET /api/v1/lots`.
 
 ### Security
 - The CI-only `metrace-test` client only exists when `KC_OVERLAYS=test`; demos remove it.

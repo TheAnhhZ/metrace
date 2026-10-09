@@ -146,6 +146,7 @@ services:
       OIDC_JWKS_URL: http://keycloak:8080/auth/realms/metrace/protocol/openid-connect/certs
       OIDC_AUDIENCE: metrace-api
       BUSINESS_TZ: Asia/Ho_Chi_Minh
+      INCIDENT_TRIAGE_SLA: ${INCIDENT_TRIAGE_SLA:-PT30M}
     depends_on:
       postgres: { condition: service_healthy }
       seaweedfs: { condition: service_healthy }

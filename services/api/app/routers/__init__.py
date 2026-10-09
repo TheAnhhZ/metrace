@@ -5,7 +5,7 @@
 
 from fastapi import APIRouter
 
-from app.routers import files, health, kitchen, lineage, master_data_read, shipments, whoami
+from app.routers import files, health, incidents, kitchen, lineage, master_data_read, shipments, whoami
 
 # Open to any caller (health) or to any authenticated caller (whoami).
 PUBLIC_ROUTERS: list[APIRouter] = [health.router, whoami.router]
@@ -18,4 +18,5 @@ GATED_ROUTERS: list[APIRouter] = [
     master_data_read.router,
     kitchen.router,
     shipments.router,
+    incidents.router,
 ]

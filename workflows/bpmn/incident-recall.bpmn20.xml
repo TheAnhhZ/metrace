@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+SPDX-FileCopyrightText: The metrace Authors
+SPDX-License-Identifier: Apache-2.0
+
+Incident recall: QA triage under an SLA timer (escalates to the director
+without cancelling triage), then four-eyes close approval. Incident status
+lives in the metrace API; this process only orders the human steps.
+Variables: incidentId, triageSla (ISO 8601 duration, e.g. PT30M; demo PT1M).
+-->
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:flowable="http://flowable.org/bpmn"
+             targetNamespace="https://metrace.example/bpmn">
+  <process id="incident-recall" name="Incident recall" isExecutable="true">
+    <startEvent id="start"/>
+    <sequenceFlow id="toTriage" sourceRef="start" targetRef="qa_triage"/>
+
+    <userTask id="qa_triage" name="QA: confirm suspects and lock" flowable:candidateGroups="qa"/>
+    <boundaryEvent id="triageSlaMissed" attachedToRef="qa_triage" cancelActivity="false">
+      <timerEventDefinition>
+        <timeDuration>${triageSla}</timeDuration>
+      </timerEventDefinition>
+    </boundaryEvent>
+    <sequenceFlow id="toEscalation" sourceRef="triageSlaMissed" targetRef="director_escalation"/>
+    <userTask id="director_escalation" name="Director: triage SLA missed" flowable:candidateGroups="director"/>
+    <sequenceFlow id="escalationDone" sourceRef="director_escalation" targetRef="escalationEnd"/>
+    <endEvent id="escalationEnd"/>
+
+    <sequenceFlow id="toClose" sourceRef="qa_triage" targetRef="close_approval"/>
+    <userTask id="close_approval" name="Approver: four-eyes close" flowable:candidateGroups="approver"/>
+    <sequenceFlow id="toEnd" sourceRef="close_approval" targetRef="end"/>
+    <endEvent id="end"/>
+  </process>
+</definitions>

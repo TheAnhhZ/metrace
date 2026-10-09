@@ -32,6 +32,9 @@ class Settings(BaseSettings):
     flowable_user: str = "rest-admin"
     flowable_password: str = ""
 
+    # Incident triage SLA before the director is pulled in (ISO 8601; demo uses PT1M).
+    incident_triage_sla: str = "PT30M"
+
     # Business time zone: DB stores UTC, service dates are computed here.
     business_tz: str = "Asia/Ho_Chi_Minh"
 

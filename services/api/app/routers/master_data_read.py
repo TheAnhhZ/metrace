@@ -12,17 +12,18 @@ from app.core.authorization import internal_router
 from app.core.business_time import service_date
 from app.core.database import DbSession
 from app.models.cooking import Dish, Menu, MenuItem
-from app.models.enums import MealSlot
+from app.models.enums import LotStatus, MealSlot
 from app.models.incident import Lock
 from app.models.kitchen_and_customers import Asset, CustomerOrg, DeliveryPoint
 from app.models.rules import RuleThreshold
-from app.models.supplier_and_lots import Ingredient, Supplier, SupplierCertificate
+from app.models.supplier_and_lots import Ingredient, IngredientLot, Receiving, Supplier, SupplierCertificate
 from app.schemas.master_data_read import (
     AssetOut,
     CertificateOut,
     DeliveryPointOut,
     DishOut,
     IngredientOut,
+    LotListOut,
     MenuOut,
     SupplierOut,
     ThresholdOut,
@@ -65,6 +66,41 @@ def list_suppliers(session: DbSession):
 @router.get("/ingredients", response_model=list[IngredientOut])
 def list_ingredients(session: DbSession):
     return session.scalars(select(Ingredient).order_by(Ingredient.code)).all()
+
+
+@router.get("/lots", response_model=list[LotListOut])
+def list_lots(session: DbSession, status: LotStatus | None = LotStatus.IN_STOCK):
+    query = (
+        select(IngredientLot, Ingredient, Supplier.code, Receiving.received_at)
+        .join(Ingredient, Ingredient.id == IngredientLot.ingredient_id)
+        .join(Supplier, Supplier.id == IngredientLot.supplier_id)
+        .join(Receiving, Receiving.id == IngredientLot.receiving_id)
+        .order_by(Receiving.received_at.desc(), IngredientLot.lot_code)
+    )
+    if status is not None:
+        query = query.where(IngredientLot.status == status)
+    rows = session.execute(query).all()
+    locked = set(
+        session.scalars(
+            select(Lock.target_id).where(
+                Lock.active, Lock.target_type == "lot", Lock.target_id.in_([r[0].id for r in rows])
+            )
+        )
+    )
+    return [
+        LotListOut(
+            id=lot.id,
+            lot_code=lot.lot_code,
+            ingredient_code=ingredient.code,
+            ingredient_name=ingredient.name,
+            supplier_code=supplier_code,
+            qty_kg=lot.qty_kg,
+            status=lot.status,
+            locked=lot.id in locked,
+            received_at=received_at,
+        )
+        for lot, ingredient, supplier_code, received_at in rows
+    ]
 
 
 @router.get("/dishes", response_model=list[DishOut])

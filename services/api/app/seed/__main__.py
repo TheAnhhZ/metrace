@@ -15,9 +15,10 @@ from app.core.business_time import service_date, utcnow
 from app.core.database import new_session
 from app.seed.baseline_scenario import seed_baseline
 from app.seed.master_data_loader import load_master_data
+from app.seed.outbreak_scenario import seed_outbreak
 
 log = logging.getLogger("seed")
-SCENARIOS = {"baseline": seed_baseline}
+SCENARIOS = {"baseline": seed_baseline, "outbreak": seed_outbreak}
 
 
 def run(scenarios: list[str], now: datetime | None = None) -> dict[str, object]:

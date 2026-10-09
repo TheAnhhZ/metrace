@@ -39,6 +39,18 @@ class IngredientOut(_Read):
     storage: str
 
 
+class LotListOut(BaseModel):
+    id: uuid.UUID
+    lot_code: str
+    ingredient_code: str
+    ingredient_name: str
+    supplier_code: str
+    qty_kg: Decimal
+    status: str
+    locked: bool
+    received_at: datetime
+
+
 class DishOut(_Read):
     id: uuid.UUID
     code: str
