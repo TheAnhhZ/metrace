@@ -31,11 +31,12 @@ phone for `/portal`. For a short escalation timer start the stack with
 2. As `qa-lan`, the **cluster suggestion** points at yesterday's lunch batches
    reaching 3 delivery points; the broth batch sits behind the soup.
 3. Open the incident, look at the **graph**: the bones lot behind the broth was
-   also used **today**. Confirm the broth batch with "lock lots": the lock is
+   also used **today**. Confirm the broth batch with "Xác nhận nghi vấn và khóa"
+   (confirm suspects and lock): the lock is
    committed in well under a second; today's lunch trucks are **held**, the
    delivery points that already ate get **recall notices**.
 4. On the phone, the school sees its notice (only its own) and acknowledges it.
-5. Optional: "Soạn nháp" — the report draft (AI or template), QA edits, approves.
+5. Optional: "Soạn bản nháp" — the report draft (AI or template), QA edits, approves.
 6. A dispatch attempt for a held truck is blocked.
 7. Close: `qa-lan` requests, `approver-ha` approves (the same person cannot).
 
@@ -46,7 +47,8 @@ phone for `/portal`. For a short escalation timer start the stack with
 - CLI: `metrace trace lot LOT-…-XUONG-LON -d forward`, `metrace shipments list
   --status held`, `metrace drill run lot LOT-…` (dry run, coverage %).
 - Cold chain: run the simulator in `breach` mode for the sample fridge → an
-  alert opens, lists the retained samples inside, and escalates if nobody acts.
+  alert opens, lists the retained samples inside, and escalates to the director
+  after `COLDCHAIN_CHECK_SLA` if nobody acknowledges it.
 - Tamper evidence: copy the anchor printed on a recall notice or the PDF footer,
   verify it; change one audit row in the database → verification names the seq.
 

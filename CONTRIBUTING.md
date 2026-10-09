@@ -11,7 +11,9 @@ Thanks for helping. A few rules keep the project healthy and fully open source.
 
 1. Open or pick an issue. Keep work items small (a few hours).
 2. Branch from `main`, open a pull request, link the issue.
-3. CI must be green: ruff, `reuse lint`, gitleaks, tests.
+3. CI must be green (`.github/workflows/ci.yml`): ruff, `reuse lint`, gitleaks,
+   API and CLI unit tests, web typecheck, test and build, and the license
+   inventory. `compose-smoke.yml` also runs integration and CLI end-to-end tests on a fresh stack.
 4. Pull requests are squash-merged. Use [Conventional Commits](https://www.conventionalcommits.org/)
    for titles (`feat:`, `fix:`, `docs:`, `chore:`, `test:`, `refactor:`).
 5. Update `CHANGELOG.md` under `Unreleased` for user-visible changes.
@@ -38,5 +40,16 @@ Install the pre-commit hooks (`pre-commit install`) so gitleaks runs locally.
 
 ## Local setup
 
-See the README quick start. Python code lives in `services/api` (uv project),
-run `make lint` and `make test` before pushing.
+Start with the README quick start (`make init`, then `docker compose up -d --wait`).
+The projects are independent; run the checks for the ones you touched before pushing:
+
+| Project | Path | Checks |
+|---|---|---|
+| API and worker (uv) | `services/api` | `make lint`, `make test` |
+| CLI (uv) | `cli` | `cd cli && uv run pytest -m "not e2e"` |
+| Sensor simulator (uv, no package) | `tools/sensor-simulator` | `uv run simulate_fridge.py --help` |
+| Web app and API client (npm workspaces: `apps/web`, `packages/api-client`) | repo root | `npm ci`, then `npm run typecheck && npm test && npm run build` |
+
+- Integration tests need the stack with dev ports: `make test-integration`.
+- After changing an endpoint: `make openapi`, then `npm run gen:api` to refresh the TypeScript types.
+- After adding a dependency: `make licenses` (fails outside the allow-list) and mention it in the PR.

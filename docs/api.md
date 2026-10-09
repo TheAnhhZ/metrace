@@ -8,13 +8,14 @@ SPDX-License-Identifier: Apache-2.0
 The full contract is OpenAPI: [`packages/api-client/openapi.json`](../packages/api-client/openapi.json)
 (`make openapi` regenerates it). The web app, the CLI and the sensor simulator
 all use this same API through the gateway at `http://localhost:9080/api/v1`.
+Paths below are relative to `/api/v1`.
 
 ## Authentication
 
 Bearer access tokens from Keycloak realm `metrace` (issuer
 `http://localhost:9080/auth/realms/metrace`, audience `metrace-api`). The gateway
-verifies the token (JWKS) and the API verifies it again. Request
-`scope=openid organization` so customer tokens carry their organization.
+verifies the token (JWKS) and the API verifies it again (signature, issuer,
+audience, expiry). Request `scope=openid organization` so customer tokens carry their organization.
 
 | Client | Flow | Used by |
 |---|---|---|
@@ -31,8 +32,9 @@ test that calls every OpenAPI operation with the wrong roles:
 | Prefix | Audience |
 |---|---|
 | `/api/v1/portal/*` | `customer_staff`, scoped to the organizations in the token |
-| `/api/v1/assets/{code}/readings` | `sensor` (machine identity) |
-| everything else | internal staff roles; some steps need a specific role (see [poka-yoke-rules.md](poka-yoke-rules.md)) |
+| `/api/v1/assets/{asset_code}/readings` | `sensor`, only for the assets listed in its `asset_codes` claim |
+| `/api/v1/whoami` | Any valid token |
+| everything else | internal staff roles; some steps need a specific role (see [poka-yoke-rules.md](poka-yoke-rules.md#who-may-do-what)) |
 
 Another organization's resource answers `404`, never `403`, so its existence is not revealed.
 
@@ -43,21 +45,33 @@ Another organization's resource answers `404`, never `403`, so its existence is 
            "details": {"violations": [...], "warnings": [...]}, "request_id": "..."}}
 ```
 
-`422` = Poka-yoke block or validation, `401/403` = auth, `404` = not found or not
-yours, `409` = state conflict, `503` = a dependency is down. Reason codes are
-listed in `services/api/app/core/reason_codes.py`; the web app maps each to a
-Vietnamese message.
+| Status | Meaning |
+|---|---|
+| `422` | Poka-yoke block (`rule` is set) or request validation (`details.errors`) |
+| `401` / `403` | Missing or invalid token / missing role |
+| `404` | Not found, or not yours |
+| `409` | State conflict, for example a close request is already pending |
+| `413` / `415` | Upload larger than 10 MiB / file type not allowed |
+| `429` | Gateway rate limit reached (per token, per minute) |
+| `503` | A dependency is down |
+
+Reason codes are listed in `services/api/app/core/reason_codes.py`; the web app
+maps each one to a Vietnamese message.
 
 ## Main resources
 
 | Area | Endpoints |
 |---|---|
-| Identity | `GET /whoami` (includes `server_now`) |
-| Master data (read only) | `/suppliers`, `/ingredients`, `/dishes`, `/lots`, `/delivery-points`, `/assets`, `/menus`, `/rule-thresholds` |
-| Kitchen | `/receivings`, `/batches` (+`/inputs`, `/finish`), `/samples` (+`/seal.svg`, `/discard`), `/portion-checks`, `/shipments` (+`/items`, `/dispatch`), `/meal-services/{date}/{slot}/status` |
-| Traceability | `GET /lineage/{type}/{id or code}?direction=forward\|backward\|both` |
-| Incidents | `/complaints`, `/complaints/cluster-suggestions`, `/incidents` (+`/confirm-suspects`, `/close-requests`, `/report-draft`, `/report`, `/report/approve`), `/close-requests/{id}/approve` |
-| Customer portal | `/portal/deliveries`, `/portal/delivery-points`, `/portal/complaints`, `/portal/notices` (+`/acknowledge`), `/portal/files` |
-| Cold chain | `POST /assets/{code}/readings` (sensor), `/coldchain/alerts`, `/coldchain/assets/{code}/readings` |
-| Evidence | `/audit/head`, `/audit/verify?anchor_seq=&anchor_hash=`, `/forms/2/{batch_id}.pdf`, `POST /recall-drills` |
-| Files | `/files` (company), `/portal/files` (customer) — JPEG/PNG/PDF, streamed through the API only |
+| Identity | `GET /whoami` (roles, organizations, `server_now`) |
+| Master data (read only) | `GET /suppliers`, `/ingredients`, `/dishes`, `/lots`, `/delivery-points`, `/assets`, `/menus`, `/rule-thresholds` |
+| Kitchen | `POST /receivings`; `/batches` (`POST`, `GET`; `/{batch_id}/inputs` `POST`, `GET`; `/{batch_id}/finish`); `/samples` (`POST`, `GET`; `/{sample_id}/seal.svg`, `/{sample_id}/discard`); `POST /portion-checks`; `/shipments` (`POST`, `GET` with live `blockers`; `/{shipment_id}/items`, `/{shipment_id}/dispatch`); `GET /meal-services/{day}/{meal_slot}/status` |
+| Traceability | `GET /lineage/{node_type}/{ref}?direction=forward\|backward\|both&max_depth=1..12` (`node_type`: `supplier`, `lot`, `batch`, `shipment`, `delivery_point`, `asset`) |
+| Incidents | `POST`, `GET /complaints`; `GET /complaints/cluster-suggestions`; `POST`, `GET /incidents`; `GET /incidents/{incident_id}`; `POST /incidents/{incident_id}/confirm-suspects`; `POST /incidents/{incident_id}/close-requests`; `POST /incidents/{incident_id}/report-draft` (`202`, drafted by the worker); `PUT /incidents/{incident_id}/report`; `POST /incidents/{incident_id}/report/approve`; `POST /close-requests/{request_id}/approve`; `POST /close-requests/{request_id}/reject` |
+| Customer portal | `GET`, `POST /portal/complaints`; `GET /portal/deliveries`; `GET /portal/delivery-points`; `GET /portal/notices`; `POST /portal/notices/{notice_id}/acknowledge` |
+| Cold chain | `POST /assets/{asset_code}/readings` (sensor); `GET /coldchain/alerts`; `POST /coldchain/alerts/{alert_id}/acknowledge` (qa); `GET /coldchain/assets/{asset_code}/readings` |
+| Evidence | `GET /audit/head`; `GET /audit/verify?anchor_seq=&anchor_hash=` (qa, director, approver); `GET /forms/2/{batch_id}.pdf` (Mẫu 2); `POST /recall-drills` (qa, director) |
+| Files | `POST /files`, `GET /files/{file_id}` (company); `POST /portal/files`, `GET /portal/files/{file_id}` (customer). JPEG, PNG or PDF, checked by content (magic bytes), max 10 MiB, streamed through the API only |
+
+`POST /recall-drills` is a dry run: it previews the lock inside a savepoint that
+is rolled back, so nothing is locked and no notice is sent. The drill itself is
+written to the audit chain.

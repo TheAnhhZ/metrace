@@ -39,7 +39,7 @@ Open <http://localhost:9080> (bound to 127.0.0.1 only).
 |-----------|---------|
 | `/`       | Web app: `/ops` for staff (tablet), `/portal` for customers (phone) |
 | `/api/*`  | metrace API (JWT verified at the gateway and again in the API) |
-| `/auth/*` | Keycloak login, token and device endpoints only |
+| `/auth/*` | Keycloak login, token, device and discovery endpoints only |
 
 Demo accounts (the password is `DEMO_USER_PASSWORD` in your `.env`):
 
@@ -102,10 +102,12 @@ npm ci && npm run typecheck && npm test && npm run build   # web app
 make licenses            # regenerate the license declaration (fails outside the allow-list)
 ```
 
+Per-project setup and checks: [CONTRIBUTING.md](CONTRIBUTING.md).
+
 Building from source: the API, worker and web images are built from this
-repository (`services/api`, `infra/web`); Keycloak is the publisher's image
-with our build options (`infra/keycloak`); the other services are pulled by tag
-from their publishers (see `compose.yaml`).
+repository (`services/api`, `infra/web`); Keycloak is the official
+`quay.io/keycloak` 26.8 image, built locally with our options (`infra/keycloak`);
+the other services are pulled by tag from their publishers (see `compose.yaml`).
 
 ## License
 

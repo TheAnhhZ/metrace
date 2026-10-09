@@ -42,11 +42,13 @@ sensor (client cred) ┘   OIDC/JWKS, rate limit  ├─ /api/*  ─► metrace 
 - **Gateway allowlist.** Only login, token, device and discovery endpoints of
   realm `metrace` are routed. Admin, master realm and account console paths
   have no route (404). The admin and account consoles are also disabled in
-  the Keycloak build.
+  the Keycloak build (`infra/keycloak/Dockerfile`: the official
+  `quay.io/keycloak` image with build options).
 - **Zero trust.** APISIX verifies the JWT, and the API verifies it again
   (signature via JWKS, issuer, audience `metrace-api`, expiry). The API never
   trusts identity headers added by the gateway. Every route denies by default
-  and requires an internal role or `customer_staff`.
+  and requires an internal role, `customer_staff` or the `sensor` role
+  (`/api/v1/whoami` accepts any valid token).
 - **Synchronous business actions.** The API changes state inside one
   PostgreSQL transaction and writes an outbox row in the same transaction.
   Only the worker calls Flowable, outside any database transaction.

@@ -5,11 +5,13 @@ SPDX-License-Identifier: Apache-2.0
 
 # Poka-yoke rules
 
-A wrong step is not warned about after the fact; it is **impossible**. Each rule
-is a pure function (`services/api/app/rules/`) that receives a snapshot and the
-thresholds and returns blocking violations and non-blocking warnings. The API
-answers `422` with every violation at once, and logs each block in
-`poka_yoke_event`.
+A wrong step is not warned about after the fact; it is **impossible**. The
+P1–P4 rules are pure functions in `services/api/app/rules/`: each receives a
+snapshot and the thresholds and returns blocking violations and non-blocking
+warnings. The lock guards (`services/api/app/services/lock_guard.py`) and the
+four-eyes close (`services/api/app/services/incident_service.py`) apply the
+incident rules. The API answers `422` with every violation at once, and logs
+each block in `poka_yoke_event`.
 
 ```json
 {"error": {"code": "P1_SUPPLIER_CERT_EXPIRED", "rule": "P1", "message": "Blocked by Poka-yoke rule P1",
@@ -43,6 +45,8 @@ Every threshold carries its basis so screens can show *why*:
 | `sample_retention_h` | 24 | h | guidance |
 | `cert_warn_days` | 30 | days | internal |
 
+Defaults are the seed values (`services/api/app/seed/master-data.yaml`).
+
 ## Rules
 
 ### P1 — Goods receipt (Mẫu 1)
@@ -57,11 +61,10 @@ Every threshold carries its basis so screens can show *why*:
 ### P2 — Cooking (Mẫu 2)
 | Code | Blocks when |
 |---|---|
-| `P2_MISSING_TIMESTAMPS` | Finish without a valid start/finish time |
-| `P2_CORE_TEMP_BELOW_MIN` | Core temperature below `core_temp_min_c` |
-| `P2_INPUT_LOCKED` | An input (or anything upstream of the batch) is locked by an incident |
-
-A batch must record at least one input before it can finish (traceability).
+| `P2_MISSING_TIMESTAMPS` | Start or finish time missing, or finish before start |
+| `P2_MISSING_INPUTS` | Finish with no input recorded (traceability) |
+| `P2_CORE_TEMP_BELOW_MIN` | Core temperature below `core_temp_min_c`, or not recorded |
+| `P2_INPUT_LOCKED` | An input, or anything upstream of the batch, is locked by an incident; also when the lineage cannot be walked (fail closed) |
 
 ### P3 — Dispatch
 | Code | Blocks when |
@@ -90,6 +93,21 @@ dispatch screen can explain what is missing before anyone presses the button.
 | `P4_DISCARD_BEFORE_RETENTION` | Before `max(stored_at, meal_end_at) + 24 h` |
 | `P4_DISCARD_DURING_INCIDENT` | The batch is locked, suspected, or its service day is under an open incident |
 
+### P5 — Four-eyes incident close
+| Code | Blocks when |
+|---|---|
+| `P5_SAME_PERSON` | The approver is the person who requested the close (`422`) |
+
+Requesting a close needs `qa`; approving or rejecting needs `approver`. These
+state conflicts are `409`, not rule violations: `CLOSE_REQUEST_PENDING` (a
+request is already open), `INCIDENT_CLOSED`, and `CONFLICT` (request already decided).
+
+### P6 — Complaint answer deadline (flag, not a block)
+A worker sweep every 30 s sets `complaint.sla_breached` once `sla_due_at` has
+passed, and writes a `complaint.sla_breached` audit event. There is no reason
+code. The deadline comes from the customer profile (`sla_hours`; 24 for schools
+and 12 for the factory in the demo) or from `COMPLAINT_SLA_OVERRIDE_MINUTES`.
+
 ## Who may do what
 
 | Step | Roles |
@@ -101,7 +119,15 @@ dispatch screen can explain what is missing before anyone presses the button.
 | Portion check (Mẫu 3) | `qa`, `chef` |
 | Create shipment, dispatch | `chef`, `driver` |
 | Add batch to shipment | `chef` |
+| Complaint intake (internal channel) | `cskh`, `qa` |
+| Open incident, confirm suspects (lock), request close | `qa` |
+| Incident report: draft, edit, approve | `qa` |
+| Approve or reject close request | `approver` |
+| Cold-chain alert: acknowledge | `qa` |
+| Recall drill | `qa`, `director` |
+| Audit head and verify | `qa`, `director`, `approver` |
+| Any other internal read (master data, lineage, shipments, samples) | any internal role |
 
-The meal checklist `GET /api/v1/meal-services/{date}/{slot}/status`
+The meal checklist `GET /api/v1/meal-services/{day}/{meal_slot}/status`
 (menu → received → cooked → samples → Mẫu 3 → dispatched) is computed from
 data; the kitchen flow has no BPMN process.
