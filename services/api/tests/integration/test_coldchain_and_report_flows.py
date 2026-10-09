@@ -57,6 +57,15 @@ def test_three_warm_readings_open_one_alert_with_a_process_and_only_qa_can_ackno
     history = call("GET", f"/coldchain/assets/{ASSET}/readings?minutes=10").json()
     assert len(history["readings"]) >= 5
 
+    # Still warm after the acknowledgement: no alert storm until the fridge is back in band.
+    assert [post_reading(t).json()["breach"] for t in (11.0, 11.5, 12.0, 12.5)] == [False] * 4
+    assert open_alert(ASSET) is None
+    assert post_reading(3.5).json()["breach"] is False
+    assert [post_reading(t).json()["breach"] for t in (9.0, 9.5, 10.0)] == [False, False, True]
+    again = wait_for(lambda: open_alert(ASSET))
+    assert again["id"] != alert["id"]
+    call("POST", f"/coldchain/alerts/{again['id']}/acknowledge", json={"note": "test cleanup"})
+
 
 def test_report_draft_is_edited_and_approved_once():
     incident = call("POST", "/incidents", json={"title": "Report probe"}).json()

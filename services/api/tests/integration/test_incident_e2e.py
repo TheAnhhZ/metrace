@@ -117,3 +117,15 @@ def test_requester_cannot_approve_own_close_request():
     res = call("POST", f"/close-requests/{request['id']}/approve", "approver-ha")
     assert res.status_code == 422
     assert res.json()["error"]["code"] == "P5_SAME_PERSON"
+
+
+def test_rejected_close_request_keeps_the_incident_open():
+    incident = ok(call("POST", "/incidents", "qa-lan", json={"title": "Reject probe"}), 201)
+    request = ok(call("POST", f"/incidents/{incident['id']}/close-requests", "qa-lan", json={}), 201)
+    assert call("POST", f"/close-requests/{request['id']}/reject", "qa-lan", json={}).status_code == 403
+    rejected = ok(call("POST", f"/close-requests/{request['id']}/reject", "approver-ha", json={"note": "Thiếu mẫu"}))
+    assert rejected["status"] == "rejected" and rejected["decided_by"] == "approver-ha"
+    assert call("POST", f"/close-requests/{request['id']}/approve", "approver-ha").status_code == 409
+    assert ok(call("GET", f"/incidents/{incident['id']}", "qa-lan"))["status"] != "closed"
+    # QA may file a new request after a rejection.
+    ok(call("POST", f"/incidents/{incident['id']}/close-requests", "qa-lan", json={}), 201)

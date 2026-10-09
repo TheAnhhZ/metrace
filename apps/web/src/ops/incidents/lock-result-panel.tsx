@@ -14,6 +14,11 @@ export function LockResultPanel({ result }: { result: LockResult }) {
         <li>Giữ lại {result.held_shipments.length} chuyến giao chưa xuất.</li>
         <li>Thông báo gửi tới {result.delivery_points.length} điểm giao.</li>
       </ul>
+      {result.truncated && (
+        <p role="alert" className="rounded-lg bg-amber-100 p-3 text-lg font-bold text-amber-900">
+          Chuỗi truy xuất sâu hơn giới hạn: đã tạm giữ mọi chuyến chưa xuất từ hôm nay (an toàn trước).
+        </p>
+      )}
       {gone > 0 && (
         <p role="alert" className="rounded-lg bg-red-100 p-3 text-lg font-bold text-red-900">
           {gone} chuyến đã xuất xe hoặc đã giao: cần thu hồi.

@@ -149,6 +149,7 @@ services:
       INCIDENT_TRIAGE_SLA: ${INCIDENT_TRIAGE_SLA:-PT30M}
       COMPLAINT_SLA_OVERRIDE_MINUTES: ${COMPLAINT_SLA_OVERRIDE_MINUTES:-}
       COLDCHAIN_CHECK_SLA: ${COLDCHAIN_CHECK_SLA:-PT10M}
+      RECALL_WINDOW_DAYS: ${RECALL_WINDOW_DAYS:-3}
     depends_on:
       postgres: { condition: service_healthy }
       seaweedfs: { condition: service_healthy }
@@ -195,6 +196,8 @@ services:
       MIGRATOR_DATABASE_URL: ""
       BPMN_DIR: /srv/workflows/bpmn
       LLM_BASE_URL: ${LLM_BASE_URL:-http://host.docker.internal:11434}
+      LLM_MODEL: ${LLM_MODEL:-qwen3:4b}
+      LLM_TIMEOUT_S: ${LLM_TIMEOUT_S:-30}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:

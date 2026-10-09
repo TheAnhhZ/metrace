@@ -4,7 +4,9 @@
 
 A notice only describes that delivery point's own shipments (a customer never
 learns about other customers). It carries the audit head (seq, hash) as an
-anchor outside the database.
+anchor outside the database. Content holds only what the customer must act on
+(shipment, food, hold/recall), so a truck merely moving dispatched -> delivered
+does not ask for a new acknowledgement.
 """
 
 import logging
@@ -22,26 +24,23 @@ from app.models.kitchen_and_customers import DeliveryPoint
 from app.models.shipment import Shipment, ShipmentItem
 from app.services import lineage_query
 from app.services.lineage_query import NodeRef
-from app.services.lock_service import recall_since
+from app.services.lock_service import WRITER_WALK, recall_since
 
 log = logging.getLogger("metrace.worker.notices")
 
 ACTION = {"held": "hold", "planned": "hold", "ready": "hold", "dispatched": "recall", "delivered": "recall"}
 
 
-def _affected(session: Session, incident_id: uuid.UUID):
+def _affected(session: Session, incident: Incident):
     # Every lock the incident ever had: a notice is still owed if it closed before the worker ran.
-    locks = session.scalars(select(Lock).where(Lock.incident_id == incident_id)).all()
+    locks = session.scalars(select(Lock).where(Lock.incident_id == incident.id)).all()
     if not locks:
         return {}
     down = lineage_query.forward_many(
-        session,
-        [NodeRef(lock.target_type, lock.target_id) for lock in locks],
-        max_depth=lineage_query.MAX_DEPTH_CAP,
-        max_nodes=50000,
+        session, [NodeRef(lock.target_type, lock.target_id) for lock in locks], **WRITER_WALK
     )
     if down.truncated:
-        log.error("incident %s: lineage walk truncated, notices may be incomplete", incident_id)
+        log.error("incident %s: lineage deeper than the depth cap, notices may be incomplete", incident.id)
     rows = session.execute(
         select(Shipment, ShipmentItem.portions, CookingBatch.batch_code, Dish.name)
         .join(ShipmentItem, ShipmentItem.shipment_id == Shipment.id)
@@ -50,7 +49,7 @@ def _affected(session: Session, incident_id: uuid.UUID):
         .where(
             Shipment.id.in_(down.ids("shipment")),
             ShipmentItem.batch_id.in_(down.ids("batch")),
-            Shipment.service_date >= recall_since(),
+            Shipment.service_date >= recall_since(incident.opened_at),
         )
         .order_by(Shipment.code, CookingBatch.batch_code)
     ).all()
@@ -62,7 +61,6 @@ def _affected(session: Session, incident_id: uuid.UUID):
                 "shipment": shipment.code,
                 "service_date": shipment.service_date.isoformat(),
                 "meal_slot": shipment.meal_slot,
-                "status": shipment.status,
                 "action": ACTION.get(shipment.status, "hold"),
                 "items": [],
             },
@@ -73,7 +71,7 @@ def _affected(session: Session, incident_id: uuid.UUID):
 
 def upsert_notices(session: Session, incident_id: uuid.UUID, anchor: tuple[int, str] | None = None) -> int:
     incident = session.get(Incident, incident_id)
-    per_point = _affected(session, incident_id)
+    per_point = _affected(session, incident)
     if not per_point:
         return 0
     seq, digest = anchor or chain_head(session)
@@ -95,11 +93,17 @@ def upsert_notices(session: Session, incident_id: uuid.UUID, anchor: tuple[int, 
             audit_seq=seq,
             audit_hash=digest,
         )
-        # Changed content (e.g. more trucks affected) must be acknowledged again.
+        # Changed content (e.g. more trucks affected) must be acknowledged again, under a fresh anchor.
         session.execute(
             stmt.on_conflict_do_update(
                 constraint="uq_recall_notice_point",
-                set_={"content": content, "acknowledged_at": None, "acknowledged_by": None},
+                set_={
+                    "content": content,
+                    "audit_seq": seq,
+                    "audit_hash": digest,
+                    "acknowledged_at": None,
+                    "acknowledged_by": None,
+                },
                 where=RecallNotice.content != stmt.excluded.content,
             )
         )
@@ -111,7 +115,7 @@ def points_missing_notice(session: Session) -> list[uuid.UUID]:
     incident_ids = session.scalars(select(Lock.incident_id).where(Lock.active).distinct()).all()
     missing = []
     for incident_id in incident_ids:
-        per_point = _affected(session, incident_id)
+        per_point = _affected(session, session.get(Incident, incident_id))
         have = set(
             session.scalars(select(RecallNotice.delivery_point_id).where(RecallNotice.incident_id == incident_id))
         )

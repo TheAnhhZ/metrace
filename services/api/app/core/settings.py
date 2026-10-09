@@ -4,6 +4,7 @@
 
 from functools import lru_cache
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -38,7 +39,7 @@ class Settings(BaseSettings):
     coldchain_check_sla: str = "PT10M"
 
     # Recall notices cover deliveries of the last N service days (older food is long eaten).
-    recall_window_days: int = 3
+    recall_window_days: int = Field(3, ge=0, le=30)
 
     # P6 complaint SLA comes from the customer profile (sla_hours); demos can shorten it.
     complaint_sla_override_minutes: int | None = None

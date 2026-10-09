@@ -4,16 +4,17 @@
 
 `apply` takes the same advisory lock as every guard, walks lineage, writes the
 locks and moves pending shipments to HELD in ONE transaction. Shipments that
-already left get recall notices (outbox -> worker). Incomplete lineage fails
-closed. Each incident releases only its own locks.
+already left get recall notices (outbox -> worker). A walk deeper than the
+depth cap fails closed for food not yet served. Each incident releases only its
+own locks.
 """
 
 import time
 import uuid
 from dataclasses import dataclass, field
-from datetime import timedelta
+from datetime import date, datetime, timedelta
 
-from sqlalchemy import select, update
+from sqlalchemy import or_, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
@@ -31,6 +32,8 @@ from app.services.lineage_query import NodeRef
 from app.services.lock_guard import serialize_lock_decisions
 
 LOCKABLE = ("batch", "lot", "supplier")
+# Writers see every reachable node (no node cap) and skip edges they do not draw.
+WRITER_WALK = {"max_depth": lineage_query.MAX_DEPTH_CAP, "max_nodes": None, "with_edges": False}
 
 
 @dataclass
@@ -42,7 +45,7 @@ class LockResult:
     audit_head: tuple[int, str]
     elapsed_ms: int
     blast_radius: dict = field(default_factory=dict)
-    truncated: bool = False  # walk hit a cap: every open shipment was held (fail closed)
+    truncated: bool = False  # deeper than the depth cap: every open truck from today on was held
 
 
 def apply(session: Session, incident: Incident, suspects: list[NodeRef], lock_lots: bool, actor: str) -> LockResult:
@@ -58,10 +61,10 @@ def apply(session: Session, incident: Incident, suspects: list[NodeRef], lock_lo
     truncated = False
     batches = [s for s in suspects if s.type == "batch"]
     if lock_lots and batches:
-        up = lineage_query.backward_many(session, batches, max_depth=lineage_query.MAX_DEPTH_CAP, max_nodes=5000)
+        up = lineage_query.backward_many(session, batches, **WRITER_WALK)
         truncated |= up.truncated
         targets |= {n for n in up.nodes if n.type == "lot"}
-    down = lineage_query.forward_many(session, sorted(targets), max_depth=lineage_query.MAX_DEPTH_CAP, max_nodes=5000)
+    down = lineage_query.forward_many(session, sorted(targets), **WRITER_WALK)
     truncated |= down.truncated
 
     for target in sorted(targets):
@@ -78,11 +81,17 @@ def apply(session: Session, incident: Incident, suspects: list[NodeRef], lock_lo
             .on_conflict_do_nothing(index_elements=["incident_id", "target_type", "target_id"], index_where=Lock.active)
         )
     shipment_ids = sorted(down.ids("shipment"))
-    open_trucks = select(Shipment).where(Shipment.status.in_([ShipmentStatus.PLANNED, ShipmentStatus.READY]))
-    if not truncated:
-        open_trucks = open_trucks.where(Shipment.id.in_(shipment_ids))
-    # Truncated walk = we may not see every affected truck: fail closed and hold ALL open ones.
-    pending = session.scalars(open_trucks.order_by(Shipment.id).with_for_update()).all()
+    affected = Shipment.id.in_(shipment_ids)
+    if truncated:
+        # Deeper than the depth cap: some affected trucks may be out of sight. Fail closed for food
+        # not yet served (today onwards), never for a backlog of stale plans.
+        affected = or_(affected, Shipment.service_date >= service_date())
+    pending = session.scalars(
+        select(Shipment)
+        .where(Shipment.status.in_([ShipmentStatus.PLANNED, ShipmentStatus.READY]), affected)
+        .order_by(Shipment.id)
+        .with_for_update()
+    ).all()
     for shipment in pending:
         shipment.status = ShipmentStatus.HELD
     held = [s.id for s in pending]
@@ -92,7 +101,7 @@ def apply(session: Session, incident: Incident, suspects: list[NodeRef], lock_lo
                 select(Shipment.id).where(
                     Shipment.id.in_(shipment_ids),
                     Shipment.status.in_([ShipmentStatus.DISPATCHED, ShipmentStatus.DELIVERED]),
-                    Shipment.service_date >= recall_since(),
+                    Shipment.service_date >= recall_since(incident.opened_at),
                 )
             )
         )
@@ -125,9 +134,13 @@ def apply(session: Session, incident: Incident, suspects: list[NodeRef], lock_lo
     )
 
 
-def recall_since():
-    """Deliveries older than the recall window have been eaten long ago: no recall notice."""
-    return service_date() - timedelta(days=get_settings().recall_window_days)
+def recall_since(opened_at: datetime) -> date:
+    """Deliveries older than the recall window before the incident opened were eaten long ago.
+
+    Anchored to the incident, not to today: a notice a customer already received
+    must never shrink on a later day.
+    """
+    return service_date(opened_at) - timedelta(days=get_settings().recall_window_days)
 
 
 def release_for_incident(session: Session, incident_id: uuid.UUID, actor: str) -> int:

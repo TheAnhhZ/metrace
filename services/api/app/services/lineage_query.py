@@ -4,7 +4,10 @@
 backward (where did it come from?) with a recursive CTE.
 
 Callers that WRITE based on a walk (locks, guards) must fail closed when
-`truncated` is true: an incomplete walk may have missed affected food.
+`truncated` is true: an incomplete walk may have missed affected food. Writers
+pass `max_nodes=None`: the SQL returns every reachable node anyway, so the node
+cap only protects what a screen can draw, and only the depth cap can then make
+a walk incomplete.
 """
 
 import uuid
@@ -88,7 +91,8 @@ def walk(
     roots: Iterable[NodeRef],
     direction: Direction,
     max_depth: int = DEFAULT_MAX_DEPTH,
-    max_nodes: int = DEFAULT_MAX_NODES,
+    max_nodes: int | None = DEFAULT_MAX_NODES,
+    with_edges: bool = True,
 ) -> LineageResult:
     roots = list(roots)
     if not roots:
@@ -98,10 +102,11 @@ def walk(
     rows = session.execute(text(_walk_sql(direction)), {**_params(roots), "depth_limit": max_depth + 1}).all()
     depths = {NodeRef(r.node_type, r.node_id): r.depth for r in rows if r.depth <= max_depth}
     truncated = any(r.depth > max_depth for r in rows)
-    if len(depths) > max_nodes:
+    if max_nodes is not None and len(depths) > max_nodes:
         keep = sorted(depths.items(), key=lambda item: (item[1], item[0]))[:max_nodes]
         depths, truncated = dict(keep), True
-    return LineageResult(depths, _edges(session, depths), truncated)
+    # Edges are for drawing the graph; writers only need the node set.
+    return LineageResult(depths, _edges(session, depths) if with_edges else set(), truncated)
 
 
 def _edges(session: Session, nodes: Iterable[NodeRef]) -> set[tuple[NodeRef, NodeRef]]:

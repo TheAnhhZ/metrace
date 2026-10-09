@@ -57,8 +57,8 @@ def coverage(session: Session, batch_ids: set) -> dict:
 
 def run_drill(session: Session, principal: Principal, root: NodeRef) -> dict:
     started = time.monotonic()
-    down = lineage_query.forward(session, root, max_depth=lineage_query.MAX_DEPTH_CAP, max_nodes=5000)
-    up = lineage_query.backward(session, root, max_depth=lineage_query.MAX_DEPTH_CAP, max_nodes=5000)
+    down = lineage_query.forward(session, root, **lock_service.WRITER_WALK)
+    up = lineage_query.backward(session, root, **lock_service.WRITER_WALK)
     trace_ms = int((time.monotonic() - started) * 1000)
 
     preview = None

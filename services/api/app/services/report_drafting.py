@@ -44,7 +44,7 @@ def build_facts(session: Session, incident: Incident) -> dict:
     locks = session.scalars(select(Lock).where(Lock.incident_id == incident.id)).all()
     nodes = {NodeRef(lock.target_type, lock.target_id): 0 for lock in locks}
     labels = {n["id"]: n["label"] for n in present(session, LineageResult(nodes))["nodes"]}
-    shipments = affected_shipments(session, list(locks))
+    shipments = affected_shipments(session, incident, list(locks))
     return {
         "incident": {
             "code": incident.code,

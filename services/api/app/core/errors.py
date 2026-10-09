@@ -96,7 +96,16 @@ def install_error_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(IntegrityError)
     async def _integrity(request: Request, exc: IntegrityError):
-        # Duplicate or dangling reference sent by the client (e.g. the same batch twice on a truck).
+        # Usually a duplicate or dangling reference sent by the client (e.g. the same batch twice on a
+        # truck). Logged with the constraint so a violation by our own code is not hidden behind a 409.
+        constraint = getattr(getattr(exc.orig, "diag", None), "constraint_name", None)
+        log.warning(
+            "integrity error on %s %s (constraint=%s, request_id=%s)",
+            request.method,
+            request.url.path,
+            constraint,
+            request_id(request),
+        )
         return _envelope(request, 409, ReasonCode.CONFLICT, "Conflicts with existing data")
 
     @app.exception_handler(DataError)

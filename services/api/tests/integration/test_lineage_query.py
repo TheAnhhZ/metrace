@@ -67,6 +67,12 @@ def test_node_cap_marks_truncated(app_session, graph):
     assert result.truncated and len(result.nodes) == 3
 
 
+def test_writers_walk_without_node_cap_or_edges(app_session, graph):
+    result = lineage_query.forward(app_session, graph.s, max_nodes=None, with_edges=False)
+    assert not result.truncated and result.edges == set()
+    assert {graph.sh1, graph.sh2, graph.dp1, graph.dp2} <= result.nodes
+
+
 def test_both_directions_from_a_batch(app_session, graph):
     result = lineage_query.both(app_session, graph.b1)
     assert {graph.s, graph.l1, graph.l2, graph.broth, graph.sh1, graph.dp1} <= result.nodes
