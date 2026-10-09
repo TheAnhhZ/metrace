@@ -76,6 +76,10 @@ A batch must record at least one input before it can finish (traceability).
 | `P3_LINEAGE_TRUNCATED` | Lineage could not be walked completely (fail closed) |
 | `P3_SHIPMENT_EMPTY` | Nothing on the truck |
 
+Closing an incident releases its locks but **does not** release held shipments:
+the food on them was part of a recall. The safe default is to plan a new
+shipment with freshly cooked food.
+
 `GET /api/v1/shipments` shows each open shipment's current blockers, so the
 dispatch screen can explain what is missing before anyone presses the button.
 
