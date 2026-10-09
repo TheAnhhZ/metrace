@@ -14,6 +14,7 @@ from fastapi import Depends
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
+from app.core.errors import not_found
 from app.core.settings import get_settings
 
 
@@ -49,3 +50,11 @@ def get_session() -> Iterator[Session]:
 
 
 DbSession = Annotated[Session, Depends(get_session)]
+
+
+def get_or_404(session: Session, model, ident, entity: str, *, for_update: bool = False):
+    """Load by primary key or raise the common 404 envelope."""
+    row = session.get(model, ident, with_for_update=for_update)
+    if row is None:
+        raise not_found(entity)
+    return row

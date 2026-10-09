@@ -33,7 +33,10 @@ test: ## unit tests (no stack needed)
 test-integration: dev-ports ## integration tests (starts the dev-ports stack; writes test rows to the dev DB)
 	cd services/api && set -a && source ../../.env && set +a && uv run pytest -m integration
 
+demo-reset: ## fresh demo data for "today" (keeps master data), restarts the worker
+	scripts/demo-reset.sh baseline
+
 openapi: ## export the API schema for the web client (packages/api-client/openapi.json)
 	cd services/api && uv run python -c "import json; from app.main import create_app; print(json.dumps(create_app().openapi(), indent=2, ensure_ascii=False))" > ../../packages/api-client/openapi.json
 
-.PHONY: help init up dev-ports down reset lint test test-integration openapi
+.PHONY: help init up dev-ports down reset lint test test-integration openapi demo-reset

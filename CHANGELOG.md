@@ -39,5 +39,15 @@ and the project uses [Semantic Versioning](https://semver.org/).
 - One-shot `seed`: synthetic DEMO master data and two service days relative to now.
 - `docs/domain-model.md`, `make openapi`.
 
+- Poka-yoke rules P1–P4 as pure functions with thresholds that carry their basis
+  (law/guidance/field/internal); every block answers 422 with all violations and is logged.
+- Kitchen flow API: receiving (Mẫu 1), cooking batches with inputs and finish (Mẫu 2), retained
+  samples with QR seal, portion checks (Mẫu 3), shipments with live blockers, dispatch,
+  meal-service checklist (state machine in the API, no BPMN).
+- Lock guards (one advisory lock, lineage-based, fail closed) wired into inputs, finish, add-item,
+  dispatch and sample discard.
+- `make demo-reset`: fresh "today" in about 10 seconds; seeded receivings carry delivery notes.
+- `docs/poka-yoke-rules.md`.
+
 ### Security
 - The CI-only `metrace-test` client only exists when `KC_OVERLAYS=test`; demos remove it.

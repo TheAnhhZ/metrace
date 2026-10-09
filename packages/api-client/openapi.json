@@ -589,6 +589,782 @@
           }
         }
       }
+    },
+    "/api/v1/receivings": {
+      "post": {
+        "tags": [
+          "kitchen"
+        ],
+        "summary": "Create Receiving",
+        "operationId": "create_receiving_api_v1_receivings_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReceivingIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceivingOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/batches": {
+      "post": {
+        "tags": [
+          "kitchen"
+        ],
+        "summary": "Start Batch",
+        "operationId": "start_batch_api_v1_batches_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "kitchen"
+        ],
+        "summary": "List Batches",
+        "operationId": "list_batches_api_v1_batches_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "day",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Day"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BatchOut"
+                  },
+                  "title": "Response List Batches Api V1 Batches Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/batches/{batch_id}/inputs": {
+      "post": {
+        "tags": [
+          "kitchen"
+        ],
+        "summary": "Add Batch Input",
+        "operationId": "add_batch_input_api_v1_batches__batch_id__inputs_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Batch Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchInputIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/batches/{batch_id}/finish": {
+      "post": {
+        "tags": [
+          "kitchen"
+        ],
+        "summary": "Finish Batch",
+        "operationId": "finish_batch_api_v1_batches__batch_id__finish_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Batch Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchFinishIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/samples": {
+      "post": {
+        "tags": [
+          "kitchen"
+        ],
+        "summary": "Store Sample",
+        "operationId": "store_sample_api_v1_samples_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SampleIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SampleOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "kitchen"
+        ],
+        "summary": "List Samples",
+        "operationId": "list_samples_api_v1_samples_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "day",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Day"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SampleListOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/samples/{sample_id}/seal.svg": {
+      "get": {
+        "tags": [
+          "kitchen"
+        ],
+        "summary": "Sample Seal",
+        "operationId": "sample_seal_api_v1_samples__sample_id__seal_svg_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sample_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Sample Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/samples/{sample_id}/discard": {
+      "post": {
+        "tags": [
+          "kitchen"
+        ],
+        "summary": "Discard Sample",
+        "operationId": "discard_sample_api_v1_samples__sample_id__discard_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sample_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Sample Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SampleOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipments": {
+      "get": {
+        "tags": [
+          "dispatch"
+        ],
+        "summary": "List Shipments",
+        "operationId": "list_shipments_api_v1_shipments_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "day",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Day"
+            }
+          },
+          {
+            "name": "meal_slot",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/MealSlot"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Meal Slot"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ShipmentOut"
+                  },
+                  "title": "Response List Shipments Api V1 Shipments Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "dispatch"
+        ],
+        "summary": "Create Shipment",
+        "operationId": "create_shipment_api_v1_shipments_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipments/{shipment_id}/items": {
+      "post": {
+        "tags": [
+          "dispatch"
+        ],
+        "summary": "Add Item",
+        "operationId": "add_item_api_v1_shipments__shipment_id__items_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "shipment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Shipment Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentItemIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipments/{shipment_id}/dispatch": {
+      "post": {
+        "tags": [
+          "dispatch"
+        ],
+        "summary": "Dispatch",
+        "operationId": "dispatch_api_v1_shipments__shipment_id__dispatch_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "shipment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Shipment Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/portion-checks": {
+      "post": {
+        "tags": [
+          "dispatch"
+        ],
+        "summary": "Record Portion Check",
+        "operationId": "record_portion_check_api_v1_portion_checks_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PortionCheckIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/meal-services/{day}/{meal_slot}/status": {
+      "get": {
+        "tags": [
+          "dispatch"
+        ],
+        "summary": "Meal Service Status",
+        "operationId": "meal_service_status_api_v1_meal_services__day___meal_slot__status_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "day",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Day"
+            }
+          },
+          {
+            "name": "meal_slot",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/MealSlot"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MealServiceStatusOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -645,6 +1421,208 @@
           "max_c"
         ],
         "title": "AssetOut"
+      },
+      "BatchFinishIn": {
+        "properties": {
+          "core_temp_c": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Core Temp C"
+          },
+          "portions_produced": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Portions Produced"
+          }
+        },
+        "type": "object",
+        "required": [
+          "core_temp_c",
+          "portions_produced"
+        ],
+        "title": "BatchFinishIn"
+      },
+      "BatchIn": {
+        "properties": {
+          "dish_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Dish Id"
+          },
+          "service_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Service Date"
+          },
+          "meal_slot": {
+            "$ref": "#/components/schemas/MealSlot"
+          },
+          "portions_planned": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Portions Planned"
+          }
+        },
+        "type": "object",
+        "required": [
+          "dish_id",
+          "service_date",
+          "meal_slot",
+          "portions_planned"
+        ],
+        "title": "BatchIn"
+      },
+      "BatchInputIn": {
+        "properties": {
+          "lot_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lot Id"
+          },
+          "input_batch_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Input Batch Id"
+          },
+          "qty_kg": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Qty Kg"
+          }
+        },
+        "type": "object",
+        "required": [
+          "qty_kg"
+        ],
+        "title": "BatchInputIn"
+      },
+      "BatchOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "batch_code": {
+            "type": "string",
+            "title": "Batch Code"
+          },
+          "dish_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Dish Id"
+          },
+          "service_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Service Date"
+          },
+          "meal_slot": {
+            "type": "string",
+            "title": "Meal Slot"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "core_temp_c": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Core Temp C"
+          },
+          "portions_planned": {
+            "type": "integer",
+            "title": "Portions Planned"
+          },
+          "portions_produced": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Portions Produced"
+          },
+          "owner": {
+            "type": "string",
+            "title": "Owner"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "batch_code",
+          "dish_id",
+          "service_date",
+          "meal_slot",
+          "status",
+          "started_at",
+          "finished_at",
+          "core_temp_c",
+          "portions_planned",
+          "portions_produced",
+          "owner"
+        ],
+        "title": "BatchOut"
       },
       "Body_upload_company_file_api_v1_files_post": {
         "properties": {
@@ -1034,6 +2012,86 @@
         ],
         "title": "LineageOut"
       },
+      "LotOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "lot_code": {
+            "type": "string",
+            "title": "Lot Code"
+          },
+          "ingredient_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Ingredient Id"
+          },
+          "qty_kg": {
+            "type": "string",
+            "title": "Qty Kg"
+          },
+          "temp_c": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temp C"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "lot_code",
+          "ingredient_id",
+          "qty_kg",
+          "temp_c",
+          "status"
+        ],
+        "title": "LotOut"
+      },
+      "MealServiceStatusOut": {
+        "properties": {
+          "service_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Service Date"
+          },
+          "meal_slot": {
+            "type": "string",
+            "title": "Meal Slot"
+          },
+          "server_now": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Server Now"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/MealStepOut"
+            },
+            "type": "array",
+            "title": "Steps"
+          }
+        },
+        "type": "object",
+        "required": [
+          "service_date",
+          "meal_slot",
+          "server_now",
+          "steps"
+        ],
+        "title": "MealServiceStatusOut"
+      },
       "MealSlot": {
         "type": "string",
         "enum": [
@@ -1042,6 +2100,30 @@
           "dinner"
         ],
         "title": "MealSlot"
+      },
+      "MealStepOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "done": {
+            "type": "boolean",
+            "title": "Done"
+          },
+          "detail": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "done",
+          "detail"
+        ],
+        "title": "MealStepOut"
       },
       "MenuOut": {
         "properties": {
@@ -1093,6 +2175,526 @@
           "dishes"
         ],
         "title": "MenuOut"
+      },
+      "PortionCheckIn": {
+        "properties": {
+          "batch_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Batch Id"
+          },
+          "shipment_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Shipment Id"
+          },
+          "portions": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Portions"
+          },
+          "menu_match": {
+            "type": "boolean",
+            "title": "Menu Match",
+            "default": true
+          },
+          "sensory_ok": {
+            "type": "boolean",
+            "title": "Sensory Ok",
+            "default": true
+          },
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "batch_id",
+          "shipment_id",
+          "portions"
+        ],
+        "title": "PortionCheckIn"
+      },
+      "ReceivingIn": {
+        "properties": {
+          "supplier_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Supplier Id"
+          },
+          "document_file_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "title": "Document File Ids",
+            "default": []
+          },
+          "sensory_ok": {
+            "type": "boolean",
+            "title": "Sensory Ok",
+            "default": true
+          },
+          "quick_test": {
+            "type": "string",
+            "title": "Quick Test",
+            "default": ""
+          },
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "default": ""
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/ReceivingLineIn"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Lines"
+          }
+        },
+        "type": "object",
+        "required": [
+          "supplier_id",
+          "lines"
+        ],
+        "title": "ReceivingIn"
+      },
+      "ReceivingLineIn": {
+        "properties": {
+          "ingredient_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Ingredient Id"
+          },
+          "qty_kg": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Qty Kg"
+          },
+          "temp_c": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temp C"
+          },
+          "expiry": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expiry"
+          },
+          "storage_asset_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Storage Asset Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ingredient_id",
+          "qty_kg"
+        ],
+        "title": "ReceivingLineIn"
+      },
+      "ReceivingOut": {
+        "properties": {
+          "warnings": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Warnings",
+            "default": []
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "supplier_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Supplier Id"
+          },
+          "received_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Received At"
+          },
+          "lots": {
+            "items": {
+              "$ref": "#/components/schemas/LotOut"
+            },
+            "type": "array",
+            "title": "Lots"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "code",
+          "supplier_id",
+          "received_at",
+          "lots"
+        ],
+        "title": "ReceivingOut"
+      },
+      "SampleIn": {
+        "properties": {
+          "batch_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Batch Id"
+          },
+          "qty_g": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Qty G"
+          },
+          "qty_ml": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Qty Ml"
+          },
+          "fridge_asset_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fridge Asset Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "batch_id"
+        ],
+        "title": "SampleIn"
+      },
+      "SampleListOut": {
+        "properties": {
+          "server_now": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Server Now"
+          },
+          "samples": {
+            "items": {
+              "$ref": "#/components/schemas/SampleOut"
+            },
+            "type": "array",
+            "title": "Samples"
+          }
+        },
+        "type": "object",
+        "required": [
+          "server_now",
+          "samples"
+        ],
+        "title": "SampleListOut"
+      },
+      "SampleOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "batch_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Batch Id"
+          },
+          "seal_code": {
+            "type": "string",
+            "title": "Seal Code"
+          },
+          "qty_g": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Qty G"
+          },
+          "qty_ml": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Qty Ml"
+          },
+          "stored_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Stored At"
+          },
+          "meal_end_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Meal End At"
+          },
+          "eligible_discard_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Eligible Discard At"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "discarded_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discarded At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "batch_id",
+          "seal_code",
+          "qty_g",
+          "qty_ml",
+          "stored_at",
+          "meal_end_at",
+          "eligible_discard_at",
+          "status",
+          "discarded_at"
+        ],
+        "title": "SampleOut"
+      },
+      "ShipmentIn": {
+        "properties": {
+          "delivery_point_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Delivery Point Id"
+          },
+          "service_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Service Date"
+          },
+          "meal_slot": {
+            "$ref": "#/components/schemas/MealSlot"
+          },
+          "vehicle_asset_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vehicle Asset Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "delivery_point_id",
+          "service_date",
+          "meal_slot"
+        ],
+        "title": "ShipmentIn"
+      },
+      "ShipmentItemIn": {
+        "properties": {
+          "batch_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Batch Id"
+          },
+          "portions": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Portions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "batch_id",
+          "portions"
+        ],
+        "title": "ShipmentItemIn"
+      },
+      "ShipmentItemOut": {
+        "properties": {
+          "batch_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Batch Id"
+          },
+          "batch_code": {
+            "type": "string",
+            "title": "Batch Code"
+          },
+          "portions": {
+            "type": "integer",
+            "title": "Portions"
+          },
+          "form3_done": {
+            "type": "boolean",
+            "title": "Form3 Done"
+          }
+        },
+        "type": "object",
+        "required": [
+          "batch_id",
+          "batch_code",
+          "portions",
+          "form3_done"
+        ],
+        "title": "ShipmentItemOut"
+      },
+      "ShipmentOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "delivery_point_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Delivery Point Id"
+          },
+          "delivery_point": {
+            "type": "string",
+            "title": "Delivery Point"
+          },
+          "service_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Service Date"
+          },
+          "meal_slot": {
+            "type": "string",
+            "title": "Meal Slot"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "dispatched_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dispatched At"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ShipmentItemOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "blockers": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Blockers",
+            "description": "What P3 would block right now (empty = ready to go)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "code",
+          "delivery_point_id",
+          "delivery_point",
+          "service_date",
+          "meal_slot",
+          "status",
+          "dispatched_at",
+          "items",
+          "blockers"
+        ],
+        "title": "ShipmentOut"
       },
       "SupplierOut": {
         "properties": {

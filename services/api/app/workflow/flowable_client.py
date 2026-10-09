@@ -112,6 +112,15 @@ class FlowableClient:
             },
         )
 
+    def delete_process_instances(self, business_key_like: str) -> int:
+        """Remove running instances whose business key matches (demo reset only)."""
+        res = self._request(
+            "GET", "/service/runtime/process-instances", params={"businessKeyLike": business_key_like, "size": 1000}
+        )
+        for instance in res["data"]:
+            self._request("DELETE", f"/service/runtime/process-instances/{instance['id']}", expected=(204,))
+        return len(res["data"])
+
     def tasks(self, process_instance_id: str, task_definition_key: str | None = None) -> list[dict[str, Any]]:
         params = {"processInstanceId": process_instance_id}
         if task_definition_key:

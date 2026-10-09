@@ -12,6 +12,7 @@ from app.models.cooking import BatchInput, CookingBatch, PortionCheck, RetainedS
 from app.models.enums import BatchStatus, ShipmentStatus
 from app.models.shipment import Shipment, ShipmentItem
 from app.models.supplier_and_lots import IngredientLot, Receiving
+from app.seed.demo_documents import store_delivery_note
 from app.seed.master_data_loader import MasterData
 
 Clock = Callable[[int], datetime]  # minutes relative to the day's anchor -> UTC instant
@@ -65,14 +66,16 @@ class KitchenDayBuilder:
             spec = by_code[code]
             supplier = self.m.suppliers[spec["supplier"]]
             if spec["supplier"] not in receivings:
+                receiving_code = f"RCV-{self.stamp}-{spec['supplier']}"
+                note = store_delivery_note(self.s, receiving_code)
                 receivings[spec["supplier"]] = self._add(
                     Receiving(
                         kitchen_id=self.m.kitchen.id,
                         supplier_id=supplier.id,
-                        code=f"RCV-{self.stamp}-{spec['supplier']}",
+                        code=receiving_code,
                         received_at=self.clock(at_min),
                         received_by="procurement-mai",
-                        document_file_ids=[],
+                        document_file_ids=[note.id],
                         sensory_ok=True,
                         quick_test="Đạt",
                         extra={"seeded": True},
