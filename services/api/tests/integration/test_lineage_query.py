@@ -2,9 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 """Recursive lineage walk on a private graph (rolled back after each test)."""
 
+import json
 from decimal import Decimal
 
 import pytest
+from sqlalchemy import text
 
 from app.models.cooking import BatchInput
 from app.services import lineage_query
@@ -77,3 +79,21 @@ def test_both_directions_from_a_batch(app_session, graph):
     result = lineage_query.both(app_session, graph.b1)
     assert {graph.s, graph.l1, graph.l2, graph.broth, graph.sh1, graph.dp1} <= result.nodes
     assert graph.b2 not in result.nodes  # sibling, neither ancestor nor descendant
+
+
+def test_supplier_trace_on_the_seed_stays_under_200_ms(app_session):
+    """EXPLAIN ANALYZE of the heaviest realistic walk: the busiest supplier, forward, full depth."""
+    supplier = app_session.execute(
+        text("SELECT supplier_id FROM ingredient_lot GROUP BY supplier_id ORDER BY count(*) DESC LIMIT 1")
+    ).scalar()
+    if supplier is None:
+        pytest.skip("no seed data")
+    root = lineage_query.NodeRef("supplier", supplier)
+    params = {**lineage_query._params([root]), "depth_limit": lineage_query.MAX_DEPTH_CAP + 1}
+    plan = app_session.execute(
+        text("EXPLAIN (ANALYZE, FORMAT JSON) " + lineage_query._walk_sql("forward")), params
+    ).scalar()
+    plan = plan if isinstance(plan, list) else json.loads(plan)
+    elapsed_ms = plan[0]["Execution Time"]
+    print(f"supplier forward walk: {elapsed_ms:.1f} ms")
+    assert elapsed_ms < 200

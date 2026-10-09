@@ -34,8 +34,8 @@ def user_token(username: str, scope: str = "openid organization") -> str:
     return res.json()["access_token"]
 
 
-@cache
-def sensor_token() -> str:
+def fresh_sensor_token() -> str:
+    """A new token = a new rate-limit bucket at the gateway (the bucket key is the Authorization header)."""
     res = httpx.post(
         TOKEN_URL,
         data={
@@ -47,6 +47,11 @@ def sensor_token() -> str:
     )
     res.raise_for_status()
     return res.json()["access_token"]
+
+
+@cache
+def sensor_token() -> str:
+    return fresh_sensor_token()
 
 
 def claims(token: str) -> dict:

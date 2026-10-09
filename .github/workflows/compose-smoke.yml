@@ -25,12 +25,17 @@ jobs:
       - name: make init (random secrets)
         run: |
           make init
-          # Small readings bucket so the 429 test runs without 1000+ requests.
-          sed -i 's/^RATE_LIMIT_READINGS_PER_MIN=.*/RATE_LIMIT_READINGS_PER_MIN=5/' .env
+          # Small readings bucket so the 429 test runs without 1000+ requests
+          # (still above the 13 readings the cold-chain test sends per minute).
+          sed -i 's/^RATE_LIMIT_READINGS_PER_MIN=.*/RATE_LIMIT_READINGS_PER_MIN=20/' .env
       - name: start stack (fresh volumes, CI-only test client)
         run: KC_OVERLAYS=test docker compose -f compose.yaml -f compose.dev-ports.yaml up -d --build --wait --wait-timeout 900
       - name: smoke
         run: scripts/smoke-core.sh
+      - name: demo reset twice is repeatable (outbreak scenario feeds the incident e2e)
+        run: |
+          scripts/demo-reset.sh baseline,outbreak
+          scripts/demo-reset.sh baseline,outbreak
       - name: integration tests
         run: make test-integration
       - name: CLI end to end

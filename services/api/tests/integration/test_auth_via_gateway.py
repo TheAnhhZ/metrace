@@ -5,7 +5,7 @@
 import httpx
 import pytest
 
-from tests.integration.gateway_tokens import GATEWAY, auth, claims, sensor_token, user_token
+from tests.integration.gateway_tokens import GATEWAY, auth, claims, fresh_sensor_token, sensor_token, user_token
 
 pytestmark = pytest.mark.integration
 
@@ -84,7 +84,7 @@ def test_login_and_discovery_paths_are_allowed():
 
 
 def test_sensor_readings_route_has_its_own_rate_limit_bucket():
-    token = sensor_token()
+    token = fresh_sensor_token()  # its own bucket: other tests keep their readings quota
     url = f"{GATEWAY}/api/v1/assets/RL-TEST/readings"
     first = httpx.post(url, headers=auth(token))
     limit = int(first.headers["X-RateLimit-Limit"])
