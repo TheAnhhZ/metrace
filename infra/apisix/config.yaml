@@ -30,3 +30,6 @@ plugins:
   - openid-connect
   - limit-count
   - proxy-rewrite
+
+# No TCP/UDP proxying: keep the stream subsystem empty.
+stream_plugins: []

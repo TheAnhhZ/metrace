@@ -122,57 +122,57 @@
       "realmRoles": ["sensor"]
     },
     {
-      "username": "qa-lan", "firstName": "Lan", "lastName": "QA", "enabled": true,
+      "username": "qa-lan", "email": "qa-lan@metrace.test", "emailVerified": true, "firstName": "Lan", "lastName": "QA", "enabled": true,
       "realmRoles": ["qa"],
       "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
     },
     {
-      "username": "approver-ha", "firstName": "Ha", "lastName": "Approver", "enabled": true,
+      "username": "approver-ha", "email": "approver-ha@metrace.test", "emailVerified": true, "firstName": "Ha", "lastName": "Approver", "enabled": true,
       "realmRoles": ["qa", "approver"],
       "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
     },
     {
-      "username": "procurement-mai", "firstName": "Mai", "lastName": "Procurement", "enabled": true,
+      "username": "procurement-mai", "email": "procurement-mai@metrace.test", "emailVerified": true, "firstName": "Mai", "lastName": "Procurement", "enabled": true,
       "realmRoles": ["procurement"],
       "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
     },
     {
-      "username": "chef-hung", "firstName": "Hung", "lastName": "Chef", "enabled": true,
+      "username": "chef-hung", "email": "chef-hung@metrace.test", "emailVerified": true, "firstName": "Hung", "lastName": "Chef", "enabled": true,
       "realmRoles": ["chef"],
       "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
     },
     {
-      "username": "driver-tuan", "firstName": "Tuan", "lastName": "Driver", "enabled": true,
+      "username": "driver-tuan", "email": "driver-tuan@metrace.test", "emailVerified": true, "firstName": "Tuan", "lastName": "Driver", "enabled": true,
       "realmRoles": ["driver"],
       "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
     },
     {
-      "username": "cskh-thu", "firstName": "Thu", "lastName": "Customer Care", "enabled": true,
+      "username": "cskh-thu", "email": "cskh-thu@metrace.test", "emailVerified": true, "firstName": "Thu", "lastName": "Customer Care", "enabled": true,
       "realmRoles": ["cskh"],
       "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
     },
     {
-      "username": "director-nam", "firstName": "Nam", "lastName": "Director", "enabled": true,
+      "username": "director-nam", "email": "director-nam@metrace.test", "emailVerified": true, "firstName": "Nam", "lastName": "Director", "enabled": true,
       "realmRoles": ["director"],
       "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
     },
     {
-      "username": "truong-a", "firstName": "Truong A", "lastName": "Staff", "enabled": true,
+      "username": "truong-a", "email": "truong-a@metrace.test", "emailVerified": true, "firstName": "Truong A", "lastName": "Staff", "enabled": true,
       "realmRoles": ["customer_staff"],
       "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
     },
     {
-      "username": "truong-b", "firstName": "Truong B", "lastName": "Staff", "enabled": true,
+      "username": "truong-b", "email": "truong-b@metrace.test", "emailVerified": true, "firstName": "Truong B", "lastName": "Staff", "enabled": true,
       "realmRoles": ["customer_staff"],
       "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
     },
     {
-      "username": "truong-c", "firstName": "Truong C", "lastName": "Staff", "enabled": true,
+      "username": "truong-c", "email": "truong-c@metrace.test", "emailVerified": true, "firstName": "Truong C", "lastName": "Staff", "enabled": true,
       "realmRoles": ["customer_staff"],
       "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
     },
     {
-      "username": "nha-may-x", "firstName": "Nha may X", "lastName": "Staff", "enabled": true,
+      "username": "nha-may-x", "email": "nha-may-x@metrace.test", "emailVerified": true, "firstName": "Nha may X", "lastName": "Staff", "enabled": true,
       "realmRoles": ["customer_staff"],
       "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
     }

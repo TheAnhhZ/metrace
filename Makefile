@@ -13,6 +13,9 @@ init: ## generate .env with random secrets (never overwrites an existing .env)
 up: init ## build and start the stack, wait until healthy
 	docker compose up -d --build --wait
 
+dev-ports: init ## like `up`, plus postgres/keycloak/flowable on 127.0.0.1 for tests
+	docker compose -f compose.yaml -f compose.dev-ports.yaml up -d --build --wait
+
 down: ## stop the stack (keep data)
 	docker compose down
 
@@ -30,4 +33,4 @@ test: ## unit tests (no stack needed)
 test-integration: ## integration tests (needs `make up`)
 	cd services/api && set -a && source ../../.env && set +a && uv run pytest -m integration
 
-.PHONY: help init up down reset lint test test-integration
+.PHONY: help init up dev-ports down reset lint test test-integration

@@ -136,7 +136,8 @@ services:
       keycloak: { condition: service_healthy }
       api: { condition: service_healthy }
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS -o /dev/null http://127.0.0.1:9080/auth/realms/metrace/.well-known/openid-configuration"]
+      # No curl in the image: any HTTP answer on :9080 means nginx is serving.
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/9080 && printf 'GET / HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && head -n1 <&3 | grep -q HTTP/"]
       interval: 10s
       timeout: 5s
       retries: 10

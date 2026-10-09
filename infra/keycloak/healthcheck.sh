@@ -3,7 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # Container healthcheck without curl: query the management port over /dev/tcp.
+# Readiness answers 200 only when every check (DB, realm import) is UP, 503 otherwise.
 set -euo pipefail
 exec 3<>/dev/tcp/127.0.0.1/9000
 printf 'GET /auth/health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3
-grep -q '"status": *"UP"' <&3
+head -n1 <&3 | grep -q ' 200 '
