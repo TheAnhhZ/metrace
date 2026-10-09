@@ -60,7 +60,9 @@ def upload_company_file(session: DbSession, principal: CurrentPrincipal, file: U
 
 @internal.get("/{file_id}")
 def download_any_file(file_id: uuid.UUID, session: DbSession, principal: CurrentPrincipal):
-    return file_service.download_response(file_service.get_visible_file(session, file_id, org_scope(principal)))
+    return file_service.download_response(
+        session, file_service.get_visible_file(session, file_id, org_scope(principal))
+    )
 
 
 @portal.post("", response_model=FileOut, status_code=201)
@@ -76,4 +78,6 @@ def upload_customer_file(
 
 @portal.get("/{file_id}")
 def download_own_file(file_id: uuid.UUID, session: DbSession, principal: CurrentPrincipal):
-    return file_service.download_response(file_service.get_visible_file(session, file_id, org_scope(principal)))
+    return file_service.download_response(
+        session, file_service.get_visible_file(session, file_id, org_scope(principal))
+    )

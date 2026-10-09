@@ -20,9 +20,12 @@ def _default(value: Any) -> Any:
 
 
 def canonical_json(value: Any) -> str:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False, default=_default)
+    # allow_nan=False: NaN/Infinity are not JSON and jsonb rejects them; fail loudly here.
+    return json.dumps(
+        value, sort_keys=True, separators=(",", ":"), ensure_ascii=False, default=_default, allow_nan=False
+    )
 
 
 def normalise(value: Any) -> Any:
-    """Round-trip through canonical JSON so what we hash is exactly what jsonb returns."""
+    """JSON-safe copy (UUIDs, dates, sets become JSON values). Not for hashing: hash what PG returns."""
     return json.loads(canonical_json(value))

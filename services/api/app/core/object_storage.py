@@ -9,8 +9,9 @@ from functools import lru_cache
 import boto3
 from botocore.client import BaseClient
 from botocore.config import Config
-from botocore.exceptions import ClientError
+from botocore.exceptions import BotoCoreError, ClientError
 
+from app.core.errors import InfraError
 from app.core.settings import get_settings
 
 
@@ -49,9 +50,25 @@ def put_bytes(key: str, data: bytes, content_type: str) -> None:
     )
 
 
-def stream_bytes(key: str, chunk_size: int = 64 * 1024) -> Iterator[bytes]:
-    body = s3_client().get_object(Bucket=get_settings().s3_bucket, Key=key)["Body"]
+class ObjectMissingError(Exception):
+    """Metadata says the file exists but the bytes are gone."""
+
+
+def open_stream(key: str, chunk_size: int = 64 * 1024) -> Iterator[bytes]:
+    """Fetch EAGERLY (errors surface before any response header is sent), then stream."""
     try:
-        yield from body.iter_chunks(chunk_size)
-    finally:
-        body.close()
+        body = s3_client().get_object(Bucket=get_settings().s3_bucket, Key=key)["Body"]
+    except ClientError as exc:
+        if exc.response.get("Error", {}).get("Code") in {"NoSuchKey", "404"}:
+            raise ObjectMissingError(key) from exc
+        raise InfraError(f"object storage: {exc}") from exc
+    except BotoCoreError as exc:
+        raise InfraError(f"object storage: {exc}") from exc
+
+    def chunks() -> Iterator[bytes]:
+        try:
+            yield from body.iter_chunks(chunk_size)
+        finally:
+            body.close()
+
+    return chunks()

@@ -7,7 +7,9 @@ from typing import Annotated
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from app.core.errors import AppError
 from app.core.principal import Principal, principal_from_claims
+from app.core.reason_codes import ReasonCode
 from app.core.security_jwt import (
     InvalidTokenError,
     KeySetUnavailableError,
@@ -31,7 +33,7 @@ def get_principal(
     try:
         claims = verify_access_token(credentials.credentials, settings)
     except KeySetUnavailableError as exc:
-        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail="Identity provider unavailable") from exc
+        raise AppError(503, ReasonCode.IDP_UNAVAILABLE, "Identity provider unavailable") from exc
     except InvalidTokenError as exc:
         raise HTTPException(
             status.HTTP_401_UNAUTHORIZED,

@@ -5,13 +5,20 @@
 import os
 
 import pytest
-from sqlalchemy import create_engine, text
+from sqlalchemy import URL, create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
 
 
-def _url(role: str, password_env: str) -> str:
-    host = os.environ.get("PGHOST_FOR_TESTS", "localhost:5432")
-    return f"postgresql+psycopg://{role}:{os.environ[password_env]}@{host}/metrace"
+def _url(role: str, password_env: str) -> URL:
+    # URL objects mask the password in reprs and tracebacks.
+    return URL.create(
+        "postgresql+psycopg",
+        username=role,
+        password=os.environ[password_env],
+        host=os.environ.get("PGHOST_FOR_TESTS", "localhost"),
+        port=5432,
+        database="metrace",
+    )
 
 
 @pytest.fixture(scope="session")

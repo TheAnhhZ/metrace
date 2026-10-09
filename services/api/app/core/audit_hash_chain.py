@@ -16,7 +16,7 @@ from typing import Any
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
-from app.core.canonical_json import canonical_json, normalise
+from app.core.canonical_json import canonical_json
 from app.models.platform import AuditEvent
 
 GENESIS_HASH = "0" * 64
@@ -52,7 +52,8 @@ def append_audit(
     prev = session.scalar(select(AuditEvent.hash).order_by(AuditEvent.seq.desc()).limit(1)) or GENESIS_HASH
     # Microsecond precision matches PostgreSQL, so the stored value re-hashes identically.
     at = datetime.now(UTC)
-    clean_payload = normalise(payload or {})
+    # Hash exactly what jsonb will return on verify (it normalises numbers: -0.0, 1e16, ...).
+    clean_payload = session.scalar(text("SELECT CAST(:p AS jsonb)"), {"p": canonical_json(payload or {})})
     event = AuditEvent(
         at=at,
         actor=actor,

@@ -1,43 +1,84 @@
 # SPDX-FileCopyrightText: The metrace Authors
 # SPDX-License-Identifier: Apache-2.0
-"""Default-deny guard: every route must sit behind a role check, except a short allowlist."""
+"""Default-deny guard, tested by behaviour (independent of FastAPI internals):
+every operation in the OpenAPI schema is called with the wrong roles and must
+answer 403 before touching anything else."""
 
-from fastapi.routing import APIRoute
+import re
+import uuid
 
-from app.core.principal import CUSTOMER_ROLE, INTERNAL_ROLES, SENSOR_ROLE
+import pytest
+from fastapi.testclient import TestClient
+
+from app.core.authentication import get_principal
+from app.core.principal import Principal
 from app.main import create_app
 
 OPEN_PATHS = {"/healthz", "/api/v1/whoami"}
-ALLOWED_GATES = {INTERNAL_ROLES, frozenset({CUSTOMER_ROLE}), frozenset({SENSOR_ROLE})}
+PORTAL_PREFIX = "/api/v1/portal/"
+SENSOR_PATH = re.compile(r"^/api/v1/assets/[^/]+/readings$")
 
 
-def _role_gates(dependant) -> list[frozenset[str]]:
-    gates = []
-    for dep in dependant.dependencies:
-        roles = getattr(dep.call, "allowed_roles", None)
-        if roles is not None:
-            gates.append(roles)
-        gates.extend(_role_gates(dep))
-    return gates
+def _principal(*roles: str) -> Principal:
+    return Principal(sub="t", username="t", roles=frozenset(roles), org_aliases=frozenset({"truong-a"}))
 
 
-def test_every_route_requires_role():
-    offenders = []
-    for route in create_app().routes:
-        if not isinstance(route, APIRoute) or route.path in OPEN_PATHS:
+def _concrete(path: str, params: list[dict]) -> str:
+    """Fill path parameters with plausible values (first enum value, else a UUID)."""
+    for param in params:
+        if param.get("in") != "path":
             continue
-        gates = _role_gates(route.dependant)
-        if not gates or not all(gate in ALLOWED_GATES for gate in gates):
-            offenders.append(f"{sorted(route.methods)} {route.path}")
-    assert offenders == [], f"routes without a known role gate: {offenders}"
+        schema = param.get("schema", {})
+        enum = schema.get("enum") or [None]
+        value = enum[0] or str(uuid.uuid4())
+        path = path.replace("{" + param["name"] + "}", str(value))
+    return path
 
 
-def test_portal_routes_are_customer_only_and_internal_routes_are_internal_only():
-    for route in create_app().routes:
-        if not isinstance(route, APIRoute) or route.path in OPEN_PATHS:
+def _operations():
+    app = create_app()
+    schema = app.openapi()
+    components = schema.get("components", {}).get("schemas", {})
+    for path, item in schema["paths"].items():
+        if path in OPEN_PATHS:
             continue
-        gates = set(_role_gates(route.dependant))
-        if route.path.startswith("/api/v1/portal/"):
-            assert gates == {frozenset({CUSTOMER_ROLE})}, route.path
-        elif "/readings" not in route.path:
-            assert gates == {INTERNAL_ROLES}, route.path
+        for method, op in item.items():
+            params = []
+            for p in op.get("parameters", []):
+                ref = p.get("schema", {}).get("$ref")
+                if ref:  # resolve enum refs like LineageNodeType
+                    p = {**p, "schema": components[ref.rsplit("/", 1)[-1]]}
+                params.append(p)
+            yield method.upper(), path, _concrete(path, params)
+
+
+OPERATIONS = list(_operations())
+
+
+def test_schema_has_gated_operations():
+    assert len(OPERATIONS) >= 4
+
+
+def _call(principal: Principal, method: str, url: str) -> int:
+    app = create_app()
+    app.dependency_overrides[get_principal] = lambda: principal
+    with TestClient(app, raise_server_exceptions=True) as client:
+        return client.request(method, url).status_code
+
+
+@pytest.mark.parametrize(("method", "template", "url"), OPERATIONS)
+def test_roleless_caller_is_forbidden_everywhere(method, template, url):
+    assert _call(_principal(), method, url) == 403, f"{method} {template} is reachable without a role"
+
+
+@pytest.mark.parametrize(("method", "template", "url"), OPERATIONS)
+def test_each_audience_is_forbidden_on_the_others_routes(method, template, url):
+    staff, customer, sensor = _principal("qa", "director"), _principal("customer_staff"), _principal("sensor")
+    if template.startswith(PORTAL_PREFIX):
+        intruders = [staff, sensor]
+    elif SENSOR_PATH.match(template):
+        intruders = [staff, customer]
+    else:
+        intruders = [customer, sensor]
+    for intruder in intruders:
+        assert _call(intruder, method, url) == 403, f"{method} {template} open to {sorted(intruder.roles)}"

@@ -13,13 +13,15 @@ from typing import Any
 
 import httpx
 
+from app.core.errors import InfraError
+
 
 class FlowableError(Exception):
     """Flowable answered with an unexpected status (logic error, do not retry blindly)."""
 
 
-class FlowableUnavailableError(Exception):
-    """Network/5xx problem talking to Flowable (infrastructure error, retry with backoff)."""
+class FlowableUnavailableError(InfraError):
+    """Network/5xx problem talking to Flowable: the outbox retries it forever with backoff."""
 
 
 @dataclass(frozen=True)
@@ -84,9 +86,10 @@ class FlowableClient:
 
     # -- runtime --------------------------------------------------------------
     def find_process_instance(self, definition_key: str, business_key: str) -> dict[str, Any] | None:
+        """Running OR finished instance for this business key (history covers both)."""
         res = self._request(
             "GET",
-            "/service/runtime/process-instances",
+            "/service/history/historic-process-instances",
             params={"processDefinitionKey": definition_key, "businessKey": business_key},
         )
         return res["data"][0] if res["data"] else None
@@ -94,7 +97,7 @@ class FlowableClient:
     def start_process(
         self, definition_key: str, business_key: str, variables: dict[str, Any] | None = None
     ) -> dict[str, Any]:
-        """Start once per business key: an existing running instance is returned as-is."""
+        """Start once per business key: an existing (running or finished) instance is returned as-is."""
         existing = self.find_process_instance(definition_key, business_key)
         if existing:
             return existing

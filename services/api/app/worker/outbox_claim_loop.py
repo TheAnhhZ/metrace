@@ -87,6 +87,7 @@ def process_message(session: Session, message: OutboxMessage, handlers: Mapping[
 def drain_once(session: Session, lane: str, handlers: Mapping[str, Handler]) -> int:
     batch = claim_batch(session, lane)
     for message in batch:
+        heartbeat.touch(lane)  # a slow batch must not look like a dead loop
         process_message(session, message, handlers)
     return len(batch)
 

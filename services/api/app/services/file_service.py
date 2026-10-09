@@ -12,8 +12,9 @@ from sqlalchemy.orm import Session
 from app.core import object_storage
 from app.core.audit_hash_chain import append_audit
 from app.core.authorization import OrgScope
-from app.core.errors import not_found
+from app.core.errors import AppError, InfraError, not_found
 from app.core.principal import Principal
+from app.core.reason_codes import ReasonCode
 from app.core.settings import get_settings
 from app.core.upload_validation import validate_upload
 from app.models.platform import FileObject
@@ -58,10 +59,18 @@ def get_visible_file(session: Session, file_id: uuid.UUID, scope: OrgScope) -> F
     return file
 
 
-def download_response(file: FileObject) -> StreamingResponse:
+def download_response(session: Session, file: FileObject) -> StreamingResponse:
     filename = quote(file.original_name)
+    try:
+        stream = object_storage.open_stream(file.storage_key)
+    except object_storage.ObjectMissingError as exc:
+        raise not_found("file") from exc
+    except InfraError as exc:
+        raise AppError(503, ReasonCode.SERVICE_UNAVAILABLE, "File storage unavailable") from exc
+    # Give the DB connection back before streaming: a slow download must not hold the pool.
+    session.close()
     return StreamingResponse(
-        object_storage.stream_bytes(file.storage_key),
+        stream,
         media_type=file.content_type,
         headers={
             "Content-Disposition": f"attachment; filename*=UTF-8''{filename}",

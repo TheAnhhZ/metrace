@@ -11,6 +11,7 @@ from app.core.outbox import emit
 from app.models.platform import OutboxEvent
 from app.worker.handler_registry import InfraError
 from app.worker.outbox_claim_loop import MAX_LOGIC_ATTEMPTS, claim_batch, drain_once
+from app.workflow.flowable_client import FlowableUnavailableError
 
 pytestmark = pytest.mark.integration
 
@@ -65,6 +66,20 @@ def test_infra_error_retries_with_backoff_and_never_fails(session_factory):
     assert row.failed_at is None and row.processed_at is None
     assert row.attempts == MAX_LOGIC_ATTEMPTS + 2
     assert "flowable down" in row.last_error
+
+
+def test_flowable_outage_is_retried_not_failed(session_factory):
+    lane = f"t-{uuid.uuid4().hex[:8]}"
+    [event_id] = _emit(session_factory, lane)
+
+    def flowable_down(_message):
+        raise FlowableUnavailableError("connection refused")
+
+    for _ in range(MAX_LOGIC_ATTEMPTS + 1):
+        with session_factory() as session:
+            drain_once(session, lane, {"test.ping": flowable_down})
+        _make_due(session_factory, event_id)
+    assert _row(session_factory, event_id).failed_at is None
 
 
 def test_logic_error_fails_after_max_attempts(session_factory):

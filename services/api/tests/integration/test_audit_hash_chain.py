@@ -37,6 +37,28 @@ def test_appended_events_verify_including_payload_round_trip(app_session):
     assert result.head_seq == chain_head(app_session)[0]
 
 
+def test_numbers_that_jsonb_normalises_still_verify(app_session):
+    # jsonb rewrites -0.0 as 0.0 and 1e16 as 10000000000000000; the hash must match what is stored.
+    append_audit(
+        app_session,
+        actor="pytest",
+        action="test.numbers",
+        entity_type="test",
+        entity_id="numbers",
+        payload={"t": round(-0.04, 1), "big": 1e16, "nested": [{"x": 1.10}]},
+    )
+    app_session.commit()
+    assert verify_chain(app_session).ok
+
+
+def test_nan_is_rejected_before_it_reaches_the_chain(app_session):
+    with pytest.raises(ValueError):
+        append_audit(
+            app_session, actor="pytest", action="t", entity_type="t", entity_id="nan", payload={"x": float("nan")}
+        )
+    app_session.rollback()
+
+
 def test_anchor_detects_matching_and_rewritten_history(app_session):
     seqs = _append(app_session, 2, "anchor")
     anchor = (seqs[-1], chain_head(app_session)[1])

@@ -10,9 +10,9 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
+from app.core.errors import InfraError
 
-class InfraError(Exception):
-    """Temporary infrastructure failure: retried forever with backoff."""
+__all__ = ["HANDLERS", "RECONCILERS", "InfraError", "OutboxMessage", "handles", "reconciler"]
 
 
 @dataclass(frozen=True)

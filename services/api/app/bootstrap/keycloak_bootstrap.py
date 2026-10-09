@@ -85,7 +85,9 @@ def ensure_organization(kc: httpx.Client, org: dict) -> None:
         org_id = organization_ids_by_alias(kc)[alias]
         log.info("created organization %s", alias)
 
-    members = kc.get(f"/organizations/{org_id}/members").json()
+    res = kc.get(f"/organizations/{org_id}/members")
+    res.raise_for_status()
+    members = res.json()
     member_names = {m["username"] for m in members}
     for member in org.get("members", []):
         if member["username"] in member_names:
@@ -110,6 +112,21 @@ def ensure_organization_claim_has_id(kc: httpx.Client) -> None:
         mapper["config"]["addOrganizationId"] = "true"
         kc.put(f"/client-scopes/{scope['id']}/protocol-mappers/models/{mapper['id']}", json=mapper).raise_for_status()
         log.info("organization claim now includes organization id")
+
+
+def overlay_names() -> set[str]:
+    return {p.name.split("-", 1)[0] for p in OVERLAY_DIR.glob("*.json")}
+
+
+def remove_overlay_clients(kc: httpx.Client, name: str) -> None:
+    """An overlay that is NOT requested must leave no trace (e.g. no CI client in a demo)."""
+    for path in sorted(OVERLAY_DIR.glob(f"{name}-*.json")):
+        for client in json.loads(path.read_text()).get("clients", []):
+            res = kc.get("/clients", params={"clientId": client["clientId"]})
+            res.raise_for_status()
+            for found in res.json():
+                kc.delete(f"/clients/{found['id']}").raise_for_status()
+                log.info("overlay %s not requested: removed client %s", name, client["clientId"])
 
 
 def apply_overlay(kc: httpx.Client, name: str) -> None:
@@ -137,6 +154,8 @@ def main() -> int:
         ensure_organization_claim_has_id(kc)
         for name in overlays:
             apply_overlay(kc, name)
+        for name in sorted(overlay_names() - set(overlays)):
+            remove_overlay_clients(kc, name)
     log.info("done (organizations=%d, overlays=%s)", len(realm.get("organizations", [])), overlays or "none")
     return 0
 

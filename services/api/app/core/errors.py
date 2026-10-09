@@ -23,10 +23,17 @@ _STATUS_TO_CODE = {
     401: ReasonCode.UNAUTHENTICATED,
     403: ReasonCode.FORBIDDEN,
     404: ReasonCode.NOT_FOUND,
+    405: ReasonCode.METHOD_NOT_ALLOWED,
     409: ReasonCode.CONFLICT,
     413: ReasonCode.FILE_TOO_LARGE,
-    503: ReasonCode.IDP_UNAVAILABLE,
+    415: ReasonCode.UNSUPPORTED_MEDIA_TYPE,
+    429: ReasonCode.RATE_LIMITED,
+    503: ReasonCode.SERVICE_UNAVAILABLE,
 }
+
+
+class InfraError(Exception):
+    """Temporary infrastructure failure (network, 5xx, dependency down): retry with backoff."""
 
 
 class AppError(Exception):

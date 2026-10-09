@@ -9,6 +9,7 @@ outbox rows wait (InfraError backoff); the API keeps working.
 import logging
 import os
 import signal
+import sys
 import threading
 import time
 from pathlib import Path
@@ -53,14 +54,23 @@ def main() -> None:
         threading.Thread(target=run_reconciler_loop, args=(stop,), name="reconciler"),
     ]
     for thread in threads:
+        thread.daemon = True  # never keep a broken process alive behind a green healthcheck
         thread.start()
-    deploy_with_retry(stop)
-    while not stop.is_set() and all(t.is_alive() for t in threads):
-        time.sleep(1)
+    exit_code = 0
+    try:
+        deploy_with_retry(stop)
+        while not stop.is_set():
+            if not all(t.is_alive() for t in threads):
+                raise RuntimeError("a worker loop died")
+            time.sleep(1)
+    except Exception:
+        log.exception("worker failed; exiting so the container restarts")
+        exit_code = 1
     stop.set()
     for thread in threads:
         thread.join(timeout=10)
-    log.info("worker stopped")
+    log.info("worker stopped (exit %s)", exit_code)
+    sys.exit(exit_code)
 
 
 if __name__ == "__main__":
