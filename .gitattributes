@@ -1,0 +1,10 @@
+# SPDX-FileCopyrightText: The metrace Authors
+# SPDX-License-Identifier: Apache-2.0
+
+* text=auto
+*.sh text eol=lf
+*.py text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+Makefile text eol=lf
+*.png binary

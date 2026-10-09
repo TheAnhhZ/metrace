@@ -1,0 +1,27 @@
+# SPDX-FileCopyrightText: The metrace Authors
+# SPDX-License-Identifier: Apache-2.0
+name: Feature / task
+description: A unit of work (aim for 4 hours or less)
+labels: ["type:feature"]
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What should be true when this is done?
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      placeholder: "- [ ] ..."
+  - type: input
+    id: estimate
+    attributes:
+      label: Estimate (hours)
+  - type: dropdown
+    id: tier
+    attributes:
+      label: Tier
+      options: ["must", "should", "could"]

@@ -1,0 +1,23 @@
+# SPDX-FileCopyrightText: The metrace Authors
+# SPDX-License-Identifier: Apache-2.0
+name: Bug report
+description: Something does not work as documented
+labels: ["type:bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: Steps to reproduce, expected vs actual result.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / request id
+      description: Paste relevant output. Remove secrets and tokens.
+      render: text
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit

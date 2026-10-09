@@ -1,0 +1,32 @@
+# SPDX-FileCopyrightText: The metrace Authors
+# SPDX-License-Identifier: Apache-2.0
+#
+# APISIX standalone (no etcd, no Admin API). Routes live in apisix.yaml.
+deployment:
+  role: data_plane
+  role_data_plane:
+    config_provider: yaml
+
+apisix:
+  node_listen: 9080
+  enable_ipv6: false
+  # Do not leak the gateway version in responses.
+  show_upstream_status_in_response_header: false
+
+nginx_config:
+  error_log_level: warn
+  # Workers only see env vars that are declared here ($ENV:// refs, ${{VAR}}).
+  envs:
+    - METRACE_API_CLIENT_SECRET
+    - RATE_LIMIT_API_PER_MIN
+    - RATE_LIMIT_READINGS_PER_MIN
+  http:
+    enable_access_log: true
+    access_log: /dev/stdout
+    client_max_body_size: 12m
+
+plugins:
+  - request-id
+  - openid-connect
+  - limit-count
+  - proxy-rewrite

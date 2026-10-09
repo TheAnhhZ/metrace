@@ -1,0 +1,39 @@
+# SPDX-FileCopyrightText: The metrace Authors
+# SPDX-License-Identifier: Apache-2.0
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v7
+      - name: ruff
+        run: |
+          uvx ruff@0.16.10 check .
+          uvx ruff@0.16.10 format --check .
+      - name: reuse lint
+        run: uvx --from 'reuse[charset-normalizer]==6.2.0' reuse lint
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  unit-tests:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+      - name: pytest (unit)
+        working-directory: services/api
+        run: uv run --python 3.12 pytest -m "not integration"

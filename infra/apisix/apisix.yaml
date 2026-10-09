@@ -1,0 +1,72 @@
+# SPDX-FileCopyrightText: The metrace Authors
+# SPDX-License-Identifier: Apache-2.0
+#
+# Single public origin: http://localhost:9080
+#   /auth/*  -> Keycloak, ALLOWLIST only (admin, master, account => no route => 404)
+#   /api/*   -> FastAPI, JWT verified here (JWKS) and again in the API
+upstreams:
+  - id: keycloak
+    type: roundrobin
+    nodes:
+      "keycloak:8080": 1
+  - id: api
+    type: roundrobin
+    nodes:
+      "api:8000": 1
+
+routes:
+  - id: auth-allowlist
+    priority: 10
+    uris:
+      - /auth/realms/metrace/protocol/openid-connect/*
+      - /auth/realms/metrace/.well-known/*
+      - /auth/realms/metrace/login-actions/*
+      - /auth/realms/metrace/device
+      - /auth/realms/metrace/device/*
+      - /auth/resources/*
+    upstream_id: keycloak
+    plugins:
+      request-id:
+        include_in_response: true
+
+  # Sensor readings get their own bucket so bursts never starve /api/*.
+  - id: api-sensor-readings
+    priority: 20
+    uri: /api/v1/assets/*
+    vars:
+      - ["uri", "~~", "^/api/v1/assets/[^/]+/readings$"]
+    upstream_id: api
+    plugins:
+      request-id:
+        include_in_response: true
+      openid-connect: &oidc
+        client_id: metrace-api
+        client_secret: $ENV://METRACE_API_CLIENT_SECRET
+        discovery: http://keycloak:8080/auth/realms/metrace/.well-known/openid-configuration
+        bearer_only: true
+        use_jwks: true
+        ssl_verify: false
+      limit-count:
+        count: ${{RATE_LIMIT_READINGS_PER_MIN}}
+        time_window: 60
+        key_type: var
+        key: http_authorization
+        rejected_code: 429
+        policy: local
+
+  - id: api
+    priority: 0
+    uri: /api/*
+    upstream_id: api
+    plugins:
+      request-id:
+        include_in_response: true
+      openid-connect: *oidc
+      limit-count:
+        count: ${{RATE_LIMIT_API_PER_MIN}}
+        time_window: 60
+        key_type: var
+        key: http_authorization
+        rejected_code: 429
+        policy: local
+#END

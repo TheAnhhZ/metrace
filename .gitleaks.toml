@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: The metrace Authors
+# SPDX-License-Identifier: Apache-2.0
+#
+# Default gitleaks rules plus an allowlist for documented placeholders.
+title = "metrace gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Placeholders and generated examples"
+regexes = ['''CHANGE_ME''']
+paths = ['''\.env\.example$''']

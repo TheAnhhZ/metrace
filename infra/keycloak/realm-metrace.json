@@ -1,0 +1,202 @@
+{
+  "realm": "metrace",
+  "displayName": "metrace",
+  "enabled": true,
+  "sslRequired": "external",
+  "organizationsEnabled": true,
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": false,
+  "duplicateEmailsAllowed": true,
+  "bruteForceProtected": true,
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "roles": {
+    "realm": [
+      { "name": "qa", "description": "Quality assurance (internal)" },
+      { "name": "procurement", "description": "Purchasing and goods receipt (internal)" },
+      { "name": "chef", "description": "Kitchen lead (internal)" },
+      { "name": "driver", "description": "Delivery driver (internal)" },
+      { "name": "cskh", "description": "Customer care (internal)" },
+      { "name": "director", "description": "Company director (internal)" },
+      { "name": "approver", "description": "Second approver for four-eyes actions (internal)" },
+      { "name": "customer_staff", "description": "Staff of a customer organization (portal only)" },
+      { "name": "sensor", "description": "Machine identity for sensor readings" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "metrace-api",
+      "name": "metrace API (audience)",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "${METRACE_API_CLIENT_SECRET}",
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false
+    },
+    {
+      "clientId": "metrace-web",
+      "name": "metrace web app",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": ["http://localhost:9080/*", "http://localhost:5173/*"],
+      "webOrigins": ["+"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:9080/*##http://localhost:5173/*"
+      },
+      "protocolMappers": [
+        {
+          "name": "audience-metrace-api",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "metrace-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "metrace-cli",
+      "name": "metrace CLI (device flow)",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "attributes": {
+        "oauth2.device.authorization.grant.enabled": "true"
+      },
+      "protocolMappers": [
+        {
+          "name": "audience-metrace-api",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "metrace-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "sensor-gateway",
+      "name": "Sensor gateway (client credentials)",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "${SENSOR_GATEWAY_CLIENT_SECRET}",
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "protocolMappers": [
+        {
+          "name": "audience-metrace-api",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "metrace-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "service-account-sensor-gateway",
+      "enabled": true,
+      "serviceAccountClientId": "sensor-gateway",
+      "realmRoles": ["sensor"]
+    },
+    {
+      "username": "qa-lan", "firstName": "Lan", "lastName": "QA", "enabled": true,
+      "realmRoles": ["qa"],
+      "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
+    },
+    {
+      "username": "approver-ha", "firstName": "Ha", "lastName": "Approver", "enabled": true,
+      "realmRoles": ["qa", "approver"],
+      "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
+    },
+    {
+      "username": "procurement-mai", "firstName": "Mai", "lastName": "Procurement", "enabled": true,
+      "realmRoles": ["procurement"],
+      "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
+    },
+    {
+      "username": "chef-hung", "firstName": "Hung", "lastName": "Chef", "enabled": true,
+      "realmRoles": ["chef"],
+      "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
+    },
+    {
+      "username": "driver-tuan", "firstName": "Tuan", "lastName": "Driver", "enabled": true,
+      "realmRoles": ["driver"],
+      "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
+    },
+    {
+      "username": "cskh-thu", "firstName": "Thu", "lastName": "Customer Care", "enabled": true,
+      "realmRoles": ["cskh"],
+      "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
+    },
+    {
+      "username": "director-nam", "firstName": "Nam", "lastName": "Director", "enabled": true,
+      "realmRoles": ["director"],
+      "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
+    },
+    {
+      "username": "truong-a", "firstName": "Truong A", "lastName": "Staff", "enabled": true,
+      "realmRoles": ["customer_staff"],
+      "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
+    },
+    {
+      "username": "truong-b", "firstName": "Truong B", "lastName": "Staff", "enabled": true,
+      "realmRoles": ["customer_staff"],
+      "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
+    },
+    {
+      "username": "truong-c", "firstName": "Truong C", "lastName": "Staff", "enabled": true,
+      "realmRoles": ["customer_staff"],
+      "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
+    },
+    {
+      "username": "nha-may-x", "firstName": "Nha may X", "lastName": "Staff", "enabled": true,
+      "realmRoles": ["customer_staff"],
+      "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
+    }
+  ],
+  "organizations": [
+    {
+      "name": "Truong A", "alias": "truong-a", "enabled": true,
+      "domains": [{ "name": "truong-a.metrace.test", "verified": false }],
+      "members": [{ "username": "truong-a", "membershipType": "UNMANAGED" }]
+    },
+    {
+      "name": "Truong B", "alias": "truong-b", "enabled": true,
+      "domains": [{ "name": "truong-b.metrace.test", "verified": false }],
+      "members": [{ "username": "truong-b", "membershipType": "UNMANAGED" }]
+    },
+    {
+      "name": "Truong C", "alias": "truong-c", "enabled": true,
+      "domains": [{ "name": "truong-c.metrace.test", "verified": false }],
+      "members": [{ "username": "truong-c", "membershipType": "UNMANAGED" }]
+    },
+    {
+      "name": "Nha may X", "alias": "nha-may-x", "enabled": true,
+      "domains": [{ "name": "nha-may-x.metrace.test", "verified": false }],
+      "members": [{ "username": "nha-may-x", "membershipType": "UNMANAGED" }]
+    }
+  ]
+}

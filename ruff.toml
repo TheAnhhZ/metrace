@@ -1,0 +1,15 @@
+# SPDX-FileCopyrightText: The metrace Authors
+# SPDX-License-Identifier: Apache-2.0
+line-length = 120
+target-version = "py312"
+src = ["services/api"]
+
+[lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "SIM", "RUF"]
+ignore = [
+  "RUF001", "RUF002", "RUF003",  # Vietnamese text is intentional
+]
+
+[lint.per-file-ignores]
+"**/tests/**" = ["S101", "S105", "S106"]
+"**/migrations/**" = ["E501"]

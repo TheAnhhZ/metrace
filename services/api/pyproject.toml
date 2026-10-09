@@ -1,0 +1,30 @@
+# SPDX-FileCopyrightText: The metrace Authors
+# SPDX-License-Identifier: Apache-2.0
+[project]
+name = "metrace-api"
+version = "0.0.0"
+description = "metrace domain API and outbox worker"
+license = "Apache-2.0"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "fastapi>=0.118",
+  "uvicorn>=0.37",
+  "pydantic-settings>=2.10",
+  "pyjwt[crypto]>=2.10",
+  "httpx>=0.28",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.4",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+markers = [
+  "integration: needs the compose stack (postgres, keycloak, apisix, flowable)",
+]
