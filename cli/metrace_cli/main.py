@@ -10,14 +10,16 @@ from enum import StrEnum
 import typer
 
 from metrace_cli import auth_device_flow as auth
-from metrace_cli.api_client import ApiError, get, require_internal
+from metrace_cli.api_client import ApiError, get, post, require_internal
 from metrace_cli.output_format import emit_json, table
 
 app = typer.Typer(no_args_is_help=True, help="metrace: trace cooking batches, lots and shipments.")
 shipments = typer.Typer(no_args_is_help=True, help="Shipments of cooked food.")
 incidents = typer.Typer(no_args_is_help=True, help="Food-safety incidents.")
+drill = typer.Typer(no_args_is_help=True, help="Recall drills (dry run: nothing is locked).")
 app.add_typer(shipments, name="shipments")
 app.add_typer(incidents, name="incidents")
+app.add_typer(drill, name="drill")
 
 
 class NodeType(StrEnum):
@@ -146,3 +148,29 @@ def list_incidents(as_json: bool = typer.Option(False, "--json")) -> None:
         ["code", "status", "escalated", "opened_by", "title"],
         [[i["code"], i["status"], "yes" if i["escalated"] else "", i["opened_by"], i["title"]] for i in rows],
     )
+
+
+@drill.command("run")
+def run_drill(node_type: NodeType, ref: str, as_json: bool = typer.Option(False, "--json")) -> None:
+    """How fast could we find and stop everything downstream of this node?"""
+    try:
+        result = post("/recall-drills", {"type": node_type.value, "ref": ref})
+    except (ApiError, RuntimeError) as exc:
+        _fail(exc)
+    if as_json:
+        return emit_json(result)
+    preview = result["lock_preview"] or {}
+    typer.echo(result["label"])
+    table(
+        ["total ms", "lots", "batches", "shipments", "points", "would hold", "already out", "coverage %"],
+        [
+            [
+                result["total_ms"],
+                *result["forward"].values(),
+                preview.get("would_hold"),
+                preview.get("already_out"),
+                result["coverage"]["coverage_pct"],
+            ]
+        ],
+    )
+    typer.echo(f"Audit anchor: #{result['audit_anchor']['seq']} {result['audit_anchor']['hash'][:16]}…")

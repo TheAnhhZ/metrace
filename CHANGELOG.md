@@ -70,6 +70,12 @@ and the project uses [Semantic Versioning](https://semver.org/).
   in that fridge. `tools/sensor-simulator` (normal/drift/breach).
 - #6 audit verification: `GET /api/v1/audit/verify?anchor_seq=&anchor_hash=` and `GET /api/v1/audit/head`.
 
+- Incident report drafts by a local LLM (Ollama, optional; deterministic template otherwise),
+  edited and approved by QA; `scripts/ai-up.sh`.
+- #1 Mẫu 2 as PDF (`GET /api/v1/forms/2/{batch_id}.pdf`, Noto Sans OFL-1.1) with the audit anchor in the footer.
+- #2 recall drill (`POST /api/v1/recall-drills`, `metrace drill run`): trace, lock preview in a
+  rolled-back savepoint, portion coverage, recorded in the audit chain.
+
 ### Fixed
 - Receiving and incident codes no longer collide under concurrent requests.
 

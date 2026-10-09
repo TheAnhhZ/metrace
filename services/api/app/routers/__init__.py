@@ -9,6 +9,7 @@ from app.routers import (
     audit_verify,
     coldchain,
     files,
+    forms_and_drills,
     health,
     incident_reports,
     incidents,
@@ -37,4 +38,5 @@ GATED_ROUTERS: list[APIRouter] = [
     coldchain.alerts,
     audit_verify.router,
     incident_reports.router,
+    forms_and_drills.router,
 ]

@@ -20,6 +20,7 @@ dependencies = [
   "python-multipart>=0.0.20",
   "pyyaml>=6.0",
   "segno>=1.6",
+  "reportlab>=4.4",
 ]
 
 [dependency-groups]
