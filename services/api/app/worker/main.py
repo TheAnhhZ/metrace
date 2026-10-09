@@ -52,6 +52,8 @@ def main() -> None:
 
     threads = [
         threading.Thread(target=run_lane, args=(new_session, "fast", HANDLERS, stop), name="lane-fast"),
+        # LLM drafts can take ~30 s: a separate lane so recall notices are never stuck behind them.
+        threading.Thread(target=run_lane, args=(new_session, "slow", HANDLERS, stop), name="lane-slow"),
         threading.Thread(target=run_reconciler_loop, args=(stop,), name="reconciler"),
     ]
     for thread in threads:

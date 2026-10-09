@@ -77,6 +77,10 @@ class LockOut(_Read):
     released_at: datetime | None
 
 
+class ReportIn(BaseModel):
+    text: str = Field(min_length=1, max_length=20000)
+
+
 class CloseRequestIn(BaseModel):
     note: str = Field("", max_length=2000)
 
@@ -103,6 +107,11 @@ class IncidentOut(_Read):
     closed_at: datetime | None
     escalated: bool
     process_instance_id: str | None
+    report_draft: str | None = None
+    report_model: str | None = None
+    report_final: str | None = None
+    report_approved_by: str | None = None
+    report_approved_at: datetime | None = None
 
 
 class IncidentDetailOut(IncidentOut):

@@ -59,6 +59,19 @@ class NoticeOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class PortalPointOut(BaseModel):
+    model_config = {"from_attributes": True}
+
+    id: uuid.UUID
+    code: str
+    name: str
+
+
+@router.get("/delivery-points", response_model=list[PortalPointOut])
+def list_my_points(session: DbSession, principal: CurrentPrincipal):
+    return portal_queries.my_delivery_points(session, org_scope(principal))
+
+
 @router.get("/deliveries", response_model=list[DeliveryOut])
 def list_deliveries(session: DbSession, principal: CurrentPrincipal, days: int = 3):
     last = service_date()

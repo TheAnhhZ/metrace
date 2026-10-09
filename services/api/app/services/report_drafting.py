@@ -35,22 +35,38 @@ SYSTEM_PROMPT = (
 
 def build_facts(session: Session, incident: Incident) -> dict:
     complaints = session.execute(
-        select(Complaint, DeliveryPoint.name).join(IncidentComplaint).join(
-            DeliveryPoint, DeliveryPoint.id == Complaint.delivery_point_id)
-        .where(IncidentComplaint.incident_id == incident.id).order_by(Complaint.created_at)
+        select(Complaint, DeliveryPoint.name)
+        .join(IncidentComplaint)
+        .join(DeliveryPoint, DeliveryPoint.id == Complaint.delivery_point_id)
+        .where(IncidentComplaint.incident_id == incident.id)
+        .order_by(Complaint.created_at)
     ).all()
     locks = session.scalars(select(Lock).where(Lock.incident_id == incident.id)).all()
     nodes = {NodeRef(lock.target_type, lock.target_id): 0 for lock in locks}
     labels = {n["id"]: n["label"] for n in present(session, LineageResult(nodes))["nodes"]}
     shipments = affected_shipments(session, list(locks))
     return {
-        "incident": {"code": incident.code, "title": incident.title, "status": incident.status,
-                     "opened_at": incident.opened_at.isoformat(), "opened_by": incident.opened_by},
-        "complaints": [{"point": point, "service_date": c.service_date.isoformat(), "meal_slot": c.meal_slot,
-                        "affected_count": c.affected_count, "text_untrusted": c.description}
-                       for c, point in complaints],
-        "locked": [{"type": lock.target_type, "label": labels.get(lock.target_id, str(lock.target_id)),
-                    "active": lock.active} for lock in locks],
+        "incident": {
+            "code": incident.code,
+            "title": incident.title,
+            "status": incident.status,
+            "opened_at": incident.opened_at.isoformat(),
+            "opened_by": incident.opened_by,
+        },
+        "complaints": [
+            {
+                "point": point,
+                "service_date": c.service_date.isoformat(),
+                "meal_slot": c.meal_slot,
+                "affected_count": c.affected_count,
+                "text_untrusted": c.description,
+            }
+            for c, point in complaints
+        ],
+        "locked": [
+            {"type": lock.target_type, "label": labels.get(lock.target_id, str(lock.target_id)), "active": lock.active}
+            for lock in locks
+        ],
         "shipments_held": [s["code"] for s in shipments if s["status"] == "held"],
         "shipments_recalled": [s["code"] for s in shipments if s["status"] in ("dispatched", "delivered")],
     }
@@ -67,8 +83,10 @@ def template_report(facts: dict) -> str:
         f"Trạng thái hiện tại: {i['status']}.",
         "",
         "2. Diễn biến",
-        *[f"- {c['service_date']} bữa {c['meal_slot']}: {c['point']} báo {c['affected_count']} người."
-          for c in facts["complaints"]],
+        *[
+            f"- {c['service_date']} bữa {c['meal_slot']}: {c['point']} báo {c['affected_count']} người."
+            for c in facts["complaints"]
+        ],
         "",
         "3. Khoanh vùng",
         *[f"- Đã khóa {x['type']}: {x['label']}" for x in facts["locked"]],
@@ -89,10 +107,18 @@ def draft_report(facts: dict) -> tuple[str, str, str]:
     user = "FACTS (JSON):\n" + json.dumps(facts, ensure_ascii=False, indent=1)
     prompt_sha = hashlib.sha256(canonical_json({"system": SYSTEM_PROMPT, "user": user}).encode()).hexdigest()
     try:
-        res = httpx.post(f"{s.llm_base_url.rstrip('/')}/api/chat", timeout=s.llm_timeout_s, json={
-            "model": s.llm_model, "stream": False, "think": False, "keep_alive": "30m",
-            "messages": [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": user}],
-            "options": {"temperature": 0.2, "num_ctx": 8192, "num_predict": 800}})
+        res = httpx.post(
+            f"{s.llm_base_url.rstrip('/')}/api/chat",
+            timeout=s.llm_timeout_s,
+            json={
+                "model": s.llm_model,
+                "stream": False,
+                "think": False,
+                "keep_alive": "30m",
+                "messages": [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": user}],
+                "options": {"temperature": 0.2, "num_ctx": 8192, "num_predict": 800},
+            },
+        )
         res.raise_for_status()
         text = res.json()["message"]["content"].strip()
         if text:

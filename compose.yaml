@@ -194,6 +194,9 @@ services:
       <<: *app-env
       MIGRATOR_DATABASE_URL: ""
       BPMN_DIR: /srv/workflows/bpmn
+      LLM_BASE_URL: ${LLM_BASE_URL:-http://host.docker.internal:11434}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./workflows/bpmn:/srv/workflows/bpmn:ro
     depends_on:

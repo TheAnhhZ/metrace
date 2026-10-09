@@ -11,7 +11,7 @@ from pathlib import Path
 # Container-local scratch dir; only this process writes it.
 HEARTBEAT_DIR = Path(os.environ.get("WORKER_HEARTBEAT_DIR", "/tmp/metrace-worker"))  # noqa: S108
 STALE_AFTER_SECONDS = 30
-EXPECTED_LOOPS = os.environ.get("WORKER_LOOPS", "fast,reconciler").split(",")
+EXPECTED_LOOPS = os.environ.get("WORKER_LOOPS", "fast,slow,reconciler").split(",")
 
 
 def touch(name: str) -> None:

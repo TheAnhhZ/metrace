@@ -10,6 +10,7 @@ from app.routers import (
     coldchain,
     files,
     health,
+    incident_reports,
     incidents,
     kitchen,
     lineage,
@@ -35,4 +36,5 @@ GATED_ROUTERS: list[APIRouter] = [
     coldchain.readings,
     coldchain.alerts,
     audit_verify.router,
+    incident_reports.router,
 ]

@@ -5,4 +5,9 @@
 Domain phases add their modules here (incident recall, cold-chain alerts).
 """
 
-from app.worker import coldchain_handlers, complaint_sla_sweep, incident_handlers  # noqa: F401
+from app.worker import (  # noqa: F401
+    coldchain_handlers,
+    complaint_sla_sweep,
+    incident_handlers,
+    report_draft_handler,
+)

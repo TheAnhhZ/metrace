@@ -40,6 +40,11 @@ class Settings(BaseSettings):
     # P6 complaint SLA comes from the customer profile (sla_hours); demos can shorten it.
     complaint_sla_override_minutes: int | None = None
 
+    # Local LLM for report DRAFTS (Ollama on the host). Missing/slow => deterministic template.
+    llm_base_url: str = "http://host.docker.internal:11434"
+    llm_model: str = "qwen3:4b"
+    llm_timeout_s: float = 30.0
+
     # Business time zone: DB stores UTC, service dates are computed here.
     business_tz: str = "Asia/Ho_Chi_Minh"
 

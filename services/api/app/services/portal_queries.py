@@ -42,6 +42,15 @@ def assert_refs_in_org(session: Session, scope: OrgScope, *, delivery_point_id=N
             raise not_found("file")
 
 
+def my_delivery_points(session: Session, scope: OrgScope) -> list[DeliveryPoint]:
+    return session.scalars(
+        select(DeliveryPoint)
+        .join(CustomerOrg, CustomerOrg.id == DeliveryPoint.customer_org_id)
+        .where(CustomerOrg.kc_org_alias.in_(scope.aliases))
+        .order_by(DeliveryPoint.code)
+    ).all()
+
+
 def deliveries(session: Session, scope: OrgScope, first: date, last: date) -> list[dict]:
     rows = session.execute(
         select(Shipment, DeliveryPoint.name, ShipmentItem.portions, CookingBatch, Dish.name)
