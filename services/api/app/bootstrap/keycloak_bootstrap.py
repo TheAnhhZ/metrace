@@ -114,6 +114,21 @@ def ensure_organization_claim_has_id(kc: httpx.Client) -> None:
         log.info("organization claim now includes organization id")
 
 
+def ensure_client_mappers(kc: httpx.Client, realm: dict) -> None:
+    """Protocol mappers added to the realm file after the first import (import skips existing realms)."""
+    for client in realm.get("clients", []):
+        res = kc.get("/clients", params={"clientId": client["clientId"]})
+        res.raise_for_status()
+        if not res.json():
+            continue
+        client_id = res.json()[0]["id"]
+        existing = {m["name"] for m in kc.get(f"/clients/{client_id}/protocol-mappers/models").json()}
+        for mapper in client.get("protocolMappers", []):
+            if mapper["name"] not in existing:
+                kc.post(f"/clients/{client_id}/protocol-mappers/models", json=mapper).raise_for_status()
+                log.info("client %s: added mapper %s", client["clientId"], mapper["name"])
+
+
 def overlay_names() -> set[str]:
     return {p.name.split("-", 1)[0] for p in OVERLAY_DIR.glob("*.json")}
 
@@ -152,6 +167,7 @@ def main() -> int:
         for org in realm.get("organizations", []):
             ensure_organization(kc, org)
         ensure_organization_claim_has_id(kc)
+        ensure_client_mappers(kc, realm)
         for name in overlays:
             apply_overlay(kc, name)
         for name in sorted(overlay_names() - set(overlays)):

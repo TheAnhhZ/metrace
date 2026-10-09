@@ -46,7 +46,8 @@ def test_todays_broth_reaches_four_points_with_portions(app_session):
     assert len(points) == 4
     assert all(p and p > 0 for p in points.values())
     shipments = [n for n in body["nodes"] if n["type"] == "shipment"]
-    assert shipments and all(s["status"] == "ready" for s in shipments)
+    # ready after a reset; held once the incident scene has locked the broth lot
+    assert shipments and all(s["status"] in ("ready", "held") for s in shipments)
 
 
 def test_shared_bones_lot_links_yesterday_and_today(app_session):

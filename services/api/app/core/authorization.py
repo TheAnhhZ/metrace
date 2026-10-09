@@ -57,13 +57,13 @@ require_customer = require_any_role({CUSTOMER_ROLE})
 require_sensor = require_any_role({SENSOR_ROLE})
 
 
-def internal_router(**kwargs) -> APIRouter:
-    return APIRouter(dependencies=[Depends(require_internal)], **kwargs)
+def internal_router(*, dependencies=(), **kwargs) -> APIRouter:
+    return APIRouter(dependencies=[Depends(require_internal), *dependencies], **kwargs)
 
 
-def portal_router(**kwargs) -> APIRouter:
-    return APIRouter(dependencies=[Depends(require_customer)], **kwargs)
+def portal_router(*, dependencies=(), **kwargs) -> APIRouter:
+    return APIRouter(dependencies=[Depends(require_customer), *dependencies], **kwargs)
 
 
-def sensor_router(**kwargs) -> APIRouter:
-    return APIRouter(dependencies=[Depends(require_sensor)], **kwargs)
+def sensor_router(*, dependencies=(), **kwargs) -> APIRouter:
+    return APIRouter(dependencies=[Depends(require_sensor), *dependencies], **kwargs)

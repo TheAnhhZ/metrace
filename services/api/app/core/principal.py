@@ -18,6 +18,8 @@ class Principal:
     # Organizations are keyed by alias: stable across realm re-imports, unlike ids.
     org_aliases: frozenset[str]
     client_id: str | None = None
+    # Machine identities (sensor gateway) may only write readings for these assets.
+    asset_codes: frozenset[str] = frozenset()
 
     @property
     def is_internal(self) -> bool:
@@ -42,4 +44,5 @@ def principal_from_claims(claims: dict[str, Any]) -> Principal:
         roles=frozenset(str(role) for role in roles),
         org_aliases=parse_organization_claim(claims.get("organization")),
         client_id=claims.get("azp"),
+        asset_codes=frozenset(c.strip() for c in str(claims.get("asset_codes") or "").split(",") if c.strip()),
     )

@@ -3,6 +3,7 @@
 """Import every model module so Base.metadata knows all tables."""
 
 from app.models import (  # noqa: F401
+    coldchain,
     cooking,
     incident,
     kitchen_and_customers,

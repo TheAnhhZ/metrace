@@ -8,7 +8,7 @@ timers; every Flowable call goes through the outbox and the worker.
 
 import uuid
 
-from sqlalchemy import func, select
+from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
 from app.core.audit_hash_chain import append_audit
@@ -31,7 +31,7 @@ def _require_open(incident: Incident) -> None:
 
 
 def open_incident(session: Session, principal: Principal, req: IncidentIn) -> Incident:
-    seq = session.scalar(select(func.count()).select_from(Incident)) + 1
+    seq = session.scalar(text("SELECT nextval('incident_code_seq')"))  # race-free numbering
     incident = Incident(code=f"INC-{seq:03d}", title=req.title, opened_by=principal.username, suspects=[])
     session.add(incident)
     session.flush()

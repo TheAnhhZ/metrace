@@ -77,6 +77,13 @@ class Incident(UuidPrimaryKey, Timestamps, Base):
     closed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     process_instance_id: Mapped[str | None] = mapped_column(String(64))
     escalated: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Should: AI-drafted report. A DRAFT only; QA edits and approves, nothing acts on it.
+    report_draft: Mapped[str | None] = mapped_column(Text)
+    report_model: Mapped[str | None] = mapped_column(String(60))
+    report_prompt_sha256: Mapped[str | None] = mapped_column(String(64))
+    report_final: Mapped[str | None] = mapped_column(Text)
+    report_approved_by: Mapped[str | None] = mapped_column(String(100))
+    report_approved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class IncidentComplaint(Base):

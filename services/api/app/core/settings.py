@@ -34,6 +34,8 @@ class Settings(BaseSettings):
 
     # Incident triage SLA before the director is pulled in (ISO 8601; demo uses PT1M).
     incident_triage_sla: str = "PT30M"
+    # Cold-chain alert: time for QA to check the fridge before the director is pulled in.
+    coldchain_check_sla: str = "PT10M"
 
     # P6 complaint SLA comes from the customer profile (sla_hours); demos can shorten it.
     complaint_sla_override_minutes: int | None = None

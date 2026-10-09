@@ -13,6 +13,7 @@ ignore = [
 [lint.per-file-ignores]
 "**/tests/**" = ["S101", "S105", "S106"]
 "**/migrations/**" = ["E501"]
+"tools/sensor-simulator/**" = ["S311"]  # simulated noise, not cryptography
 
 [lint.flake8-bugbear]
 # FastAPI declares parameters through these calls in argument defaults.

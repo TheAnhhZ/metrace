@@ -148,6 +148,7 @@ services:
       BUSINESS_TZ: Asia/Ho_Chi_Minh
       INCIDENT_TRIAGE_SLA: ${INCIDENT_TRIAGE_SLA:-PT30M}
       COMPLAINT_SLA_OVERRIDE_MINUTES: ${COMPLAINT_SLA_OVERRIDE_MINUTES:-}
+      COLDCHAIN_CHECK_SLA: ${COLDCHAIN_CHECK_SLA:-PT10M}
     depends_on:
       postgres: { condition: service_healthy }
       seaweedfs: { condition: service_healthy }

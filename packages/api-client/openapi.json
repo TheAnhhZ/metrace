@@ -258,13 +258,13 @@
         }
       }
     },
-    "/api/v1/lineage/{node_type}/{node_id}": {
+    "/api/v1/lineage/{node_type}/{ref}": {
       "get": {
         "tags": [
           "lineage"
         ],
         "summary": "Get Lineage",
-        "operationId": "get_lineage_api_v1_lineage__node_type___node_id__get",
+        "operationId": "get_lineage_api_v1_lineage__node_type___ref__get",
         "security": [
           {
             "HTTPBearer": []
@@ -280,13 +280,12 @@
             }
           },
           {
-            "name": "node_id",
+            "name": "ref",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "format": "uuid",
-              "title": "Node Id"
+              "title": "Ref"
             }
           },
           {
@@ -1878,10 +1877,529 @@
           }
         }
       }
+    },
+    "/api/v1/portal/deliveries": {
+      "get": {
+        "tags": [
+          "portal"
+        ],
+        "summary": "List Deliveries",
+        "operationId": "list_deliveries_api_v1_portal_deliveries_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 3,
+              "title": "Days"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeliveryOut"
+                  },
+                  "title": "Response List Deliveries Api V1 Portal Deliveries Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/portal/complaints": {
+      "get": {
+        "tags": [
+          "portal"
+        ],
+        "summary": "List Complaints",
+        "operationId": "list_complaints_api_v1_portal_complaints_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalComplaintsOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "portal"
+        ],
+        "summary": "Create Complaint",
+        "operationId": "create_complaint_api_v1_portal_complaints_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PortalComplaintIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplaintOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/portal/notices": {
+      "get": {
+        "tags": [
+          "portal"
+        ],
+        "summary": "List Notices",
+        "operationId": "list_notices_api_v1_portal_notices_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/NoticeOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Notices Api V1 Portal Notices Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/portal/notices/{notice_id}/acknowledge": {
+      "post": {
+        "tags": [
+          "portal"
+        ],
+        "summary": "Acknowledge",
+        "operationId": "acknowledge_api_v1_portal_notices__notice_id__acknowledge_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "notice_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Notice Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoticeOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assets/{asset_code}/readings": {
+      "post": {
+        "tags": [
+          "cold chain"
+        ],
+        "summary": "Post Reading",
+        "operationId": "post_reading_api_v1_assets__asset_code__readings_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "asset_code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Asset Code"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReadingIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadingAccepted"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/coldchain/alerts": {
+      "get": {
+        "tags": [
+          "cold chain"
+        ],
+        "summary": "List Open Alerts",
+        "operationId": "list_open_alerts_api_v1_coldchain_alerts_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array",
+                  "title": "Response List Open Alerts Api V1 Coldchain Alerts Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/coldchain/alerts/{alert_id}/acknowledge": {
+      "post": {
+        "tags": [
+          "cold chain"
+        ],
+        "summary": "Acknowledge Alert",
+        "operationId": "acknowledge_alert_api_v1_coldchain_alerts__alert_id__acknowledge_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "alert_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Alert Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcknowledgeIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/coldchain/assets/{asset_code}/readings": {
+      "get": {
+        "tags": [
+          "cold chain"
+        ],
+        "summary": "Asset Readings",
+        "operationId": "asset_readings_api_v1_coldchain_assets__asset_code__readings_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "asset_code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Asset Code"
+            }
+          },
+          {
+            "name": "minutes",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1440,
+              "minimum": 1,
+              "default": 60,
+              "title": "Minutes"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Asset Readings Api V1 Coldchain Assets  Asset Code  Readings Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/audit/head": {
+      "get": {
+        "tags": [
+          "audit"
+        ],
+        "summary": "Head",
+        "operationId": "head_api_v1_audit_head_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Head Api V1 Audit Head Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/audit/verify": {
+      "get": {
+        "tags": [
+          "audit"
+        ],
+        "summary": "Verify",
+        "operationId": "verify_api_v1_audit_verify_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "anchor_seq",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Anchor Seq"
+            }
+          },
+          {
+            "name": "anchor_hash",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 64,
+                  "maxLength": 64,
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Anchor Hash"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AcknowledgeIn": {
+        "properties": {
+          "note": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Note",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "title": "AcknowledgeIn"
+      },
       "AssetOut": {
         "properties": {
           "id": {
@@ -2440,6 +2958,10 @@
             "format": "date-time",
             "title": "Sla Due At"
           },
+          "sla_breached": {
+            "type": "boolean",
+            "title": "Sla Breached"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -2460,6 +2982,7 @@
           "status",
           "reported_by",
           "sla_due_at",
+          "sla_breached",
           "created_at"
         ],
         "title": "ComplaintOut"
@@ -2494,6 +3017,108 @@
           "nodes"
         ],
         "title": "ConfirmSuspectsIn"
+      },
+      "DeliveryItem": {
+        "properties": {
+          "dish": {
+            "type": "string",
+            "title": "Dish"
+          },
+          "batch_code": {
+            "type": "string",
+            "title": "Batch Code"
+          },
+          "portions": {
+            "type": "integer",
+            "title": "Portions"
+          },
+          "sample_sealed": {
+            "type": "boolean",
+            "title": "Sample Sealed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "dish",
+          "batch_code",
+          "portions",
+          "sample_sealed"
+        ],
+        "title": "DeliveryItem"
+      },
+      "DeliveryOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "delivery_point": {
+            "type": "string",
+            "title": "Delivery Point"
+          },
+          "service_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Service Date"
+          },
+          "meal_slot": {
+            "type": "string",
+            "title": "Meal Slot"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "dispatched_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dispatched At"
+          },
+          "delivered_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delivered At"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DeliveryItem"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "code",
+          "delivery_point",
+          "service_date",
+          "meal_slot",
+          "status",
+          "dispatched_at",
+          "delivered_at",
+          "items"
+        ],
+        "title": "DeliveryOut"
       },
       "DeliveryPointOut": {
         "properties": {
@@ -3397,6 +4022,150 @@
         ],
         "title": "MenuOut"
       },
+      "NoticeOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "incident_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Incident Id"
+          },
+          "delivery_point_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Delivery Point Id"
+          },
+          "content": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Content"
+          },
+          "audit_seq": {
+            "type": "integer",
+            "title": "Audit Seq"
+          },
+          "audit_hash": {
+            "type": "string",
+            "title": "Audit Hash"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "acknowledged_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Acknowledged At"
+          },
+          "acknowledged_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Acknowledged By"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "incident_id",
+          "delivery_point_id",
+          "content",
+          "audit_seq",
+          "audit_hash",
+          "created_at",
+          "acknowledged_at",
+          "acknowledged_by"
+        ],
+        "title": "NoticeOut"
+      },
+      "PortalComplaintIn": {
+        "properties": {
+          "delivery_point_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Delivery Point Id"
+          },
+          "channel": {
+            "$ref": "#/components/schemas/ComplaintChannel",
+            "default": "cskh"
+          },
+          "service_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Service Date"
+          },
+          "meal_slot": {
+            "$ref": "#/components/schemas/MealSlot"
+          },
+          "affected_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Affected Count",
+            "default": 0
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Description",
+            "default": ""
+          },
+          "file_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "title": "File Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "delivery_point_id",
+          "service_date",
+          "meal_slot"
+        ],
+        "title": "PortalComplaintIn"
+      },
+      "PortalComplaintsOut": {
+        "properties": {
+          "server_now": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Server Now"
+          },
+          "complaints": {
+            "items": {
+              "$ref": "#/components/schemas/ComplaintOut"
+            },
+            "type": "array",
+            "title": "Complaints"
+          }
+        },
+        "type": "object",
+        "required": [
+          "server_now",
+          "complaints"
+        ],
+        "title": "PortalComplaintsOut"
+      },
       "PortionCheckIn": {
         "properties": {
           "batch_id": {
@@ -3437,6 +4206,66 @@
           "portions"
         ],
         "title": "PortionCheckIn"
+      },
+      "ReadingAccepted": {
+        "properties": {
+          "accepted": {
+            "type": "boolean",
+            "title": "Accepted"
+          },
+          "breach": {
+            "type": "boolean",
+            "title": "Breach"
+          },
+          "alert_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alert Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "accepted",
+          "breach",
+          "alert_id"
+        ],
+        "title": "ReadingAccepted"
+      },
+      "ReadingIn": {
+        "properties": {
+          "ts": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Ts",
+            "description": "Device clock; rejected when more than 60 s away from server time"
+          },
+          "temp_c": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 120.0,
+                "minimum": -60.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Temp C"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ts",
+          "temp_c"
+        ],
+        "title": "ReadingIn"
       },
       "ReceivingIn": {
         "properties": {
@@ -4055,6 +4884,72 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "VerifyOut": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "checked": {
+            "type": "integer",
+            "title": "Checked"
+          },
+          "head_seq": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Head Seq"
+          },
+          "head_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Head Hash"
+          },
+          "first_bad_seq": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Bad Seq"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok",
+          "checked",
+          "head_seq",
+          "head_hash",
+          "first_bad_seq",
+          "reason"
+        ],
+        "title": "VerifyOut"
       },
       "WhoAmI": {
         "properties": {

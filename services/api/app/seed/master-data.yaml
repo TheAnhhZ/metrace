@@ -69,7 +69,7 @@ dishes:
 assets:
   - { code: TU-MAT-01, type: fridge, name: Tủ mát nguyên liệu, min_c: 0, max_c: 5 }
   - { code: TU-DONG-01, type: freezer, name: Tủ đông nguyên liệu, min_c: -25, max_c: -15 }
-  - { code: TU-MAU-01, type: fridge, name: Tủ lưu mẫu thức ăn, min_c: 0, max_c: 5 }
+  - { code: TU-MAU-01, type: fridge, name: Tủ lưu mẫu thức ăn, min_c: 2, max_c: 8 }
   - { code: XE-01, type: truck, name: Xe giao hàng 01, min_c: null, max_c: null }
   - { code: XE-02, type: truck, name: Xe giao hàng 02, min_c: null, max_c: null }
 
@@ -98,3 +98,9 @@ thresholds:
   - { code: sample_retention_h, value: 24, unit: "giờ", basis_type: guidance,
       basis: "QĐ 1246/QĐ-BYT: lưu mẫu 24 giờ, tính từ max(lúc lưu, kết thúc bữa)" }
   - { code: cert_warn_days, value: 30, unit: "ngày", basis_type: internal, basis: "Cảnh báo sớm GCN sắp hết hạn" }
+  - { code: coldchain_consecutive_n, value: 3, unit: "lần đo", basis_type: internal,
+      basis: "Chống nhiễu: chỉ báo động khi N lần đo liên tiếp nằm ngoài dải an toàn của tủ" }
+  - { code: coldchain_max_skew_s, value: 60, unit: "giây", basis_type: internal,
+      basis: "Từ chối số đo có đồng hồ thiết bị lệch quá mức so với máy chủ" }
+  - { code: sample_fridge_range, value: 8, unit: "°C", basis_type: guidance,
+      basis: "QĐ 1246/QĐ-BYT: bảo quản mẫu lưu ở 2–8 °C (chờ xác minh hiệu lực)" }

@@ -13,15 +13,42 @@
   "ssoSessionMaxLifespan": 36000,
   "roles": {
     "realm": [
-      { "name": "qa", "description": "Quality assurance (internal)" },
-      { "name": "procurement", "description": "Purchasing and goods receipt (internal)" },
-      { "name": "chef", "description": "Kitchen lead (internal)" },
-      { "name": "driver", "description": "Delivery driver (internal)" },
-      { "name": "cskh", "description": "Customer care (internal)" },
-      { "name": "director", "description": "Company director (internal)" },
-      { "name": "approver", "description": "Second approver for four-eyes actions (internal)" },
-      { "name": "customer_staff", "description": "Staff of a customer organization (portal only)" },
-      { "name": "sensor", "description": "Machine identity for sensor readings" }
+      {
+        "name": "qa",
+        "description": "Quality assurance (internal)"
+      },
+      {
+        "name": "procurement",
+        "description": "Purchasing and goods receipt (internal)"
+      },
+      {
+        "name": "chef",
+        "description": "Kitchen lead (internal)"
+      },
+      {
+        "name": "driver",
+        "description": "Delivery driver (internal)"
+      },
+      {
+        "name": "cskh",
+        "description": "Customer care (internal)"
+      },
+      {
+        "name": "director",
+        "description": "Company director (internal)"
+      },
+      {
+        "name": "approver",
+        "description": "Second approver for four-eyes actions (internal)"
+      },
+      {
+        "name": "customer_staff",
+        "description": "Staff of a customer organization (portal only)"
+      },
+      {
+        "name": "sensor",
+        "description": "Machine identity for sensor readings"
+      }
     ]
   },
   "clients": [
@@ -44,8 +71,13 @@
       "standardFlowEnabled": true,
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,
-      "redirectUris": ["http://localhost:9080/*", "http://localhost:5173/*"],
-      "webOrigins": ["+"],
+      "redirectUris": [
+        "http://localhost:9080/*",
+        "http://localhost:5173/*"
+      ],
+      "webOrigins": [
+        "+"
+      ],
       "attributes": {
         "pkce.code.challenge.method": "S256",
         "post.logout.redirect.uris": "http://localhost:9080/*##http://localhost:5173/*"
@@ -110,6 +142,19 @@
             "id.token.claim": "false",
             "introspection.token.claim": "true"
           }
+        },
+        {
+          "name": "asset-codes",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-hardcoded-claim-mapper",
+          "config": {
+            "claim.name": "asset_codes",
+            "claim.value": "TU-MAT-01,TU-DONG-01,TU-MAU-01",
+            "jsonType.label": "String",
+            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "introspection.token.claim": "true"
+          }
         }
       ]
     }
@@ -119,84 +164,278 @@
       "username": "service-account-sensor-gateway",
       "enabled": true,
       "serviceAccountClientId": "sensor-gateway",
-      "realmRoles": ["sensor"]
+      "realmRoles": [
+        "sensor"
+      ]
     },
     {
-      "username": "qa-lan", "email": "qa-lan@metrace.test", "emailVerified": true, "firstName": "Lan", "lastName": "QA", "enabled": true,
-      "realmRoles": ["qa"],
-      "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
+      "username": "qa-lan",
+      "email": "qa-lan@metrace.test",
+      "emailVerified": true,
+      "firstName": "Lan",
+      "lastName": "QA",
+      "enabled": true,
+      "realmRoles": [
+        "qa"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${DEMO_USER_PASSWORD}",
+          "temporary": false
+        }
+      ]
     },
     {
-      "username": "approver-ha", "email": "approver-ha@metrace.test", "emailVerified": true, "firstName": "Ha", "lastName": "Approver", "enabled": true,
-      "realmRoles": ["qa", "approver"],
-      "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
+      "username": "approver-ha",
+      "email": "approver-ha@metrace.test",
+      "emailVerified": true,
+      "firstName": "Ha",
+      "lastName": "Approver",
+      "enabled": true,
+      "realmRoles": [
+        "qa",
+        "approver"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${DEMO_USER_PASSWORD}",
+          "temporary": false
+        }
+      ]
     },
     {
-      "username": "procurement-mai", "email": "procurement-mai@metrace.test", "emailVerified": true, "firstName": "Mai", "lastName": "Procurement", "enabled": true,
-      "realmRoles": ["procurement"],
-      "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
+      "username": "procurement-mai",
+      "email": "procurement-mai@metrace.test",
+      "emailVerified": true,
+      "firstName": "Mai",
+      "lastName": "Procurement",
+      "enabled": true,
+      "realmRoles": [
+        "procurement"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${DEMO_USER_PASSWORD}",
+          "temporary": false
+        }
+      ]
     },
     {
-      "username": "chef-hung", "email": "chef-hung@metrace.test", "emailVerified": true, "firstName": "Hung", "lastName": "Chef", "enabled": true,
-      "realmRoles": ["chef"],
-      "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
+      "username": "chef-hung",
+      "email": "chef-hung@metrace.test",
+      "emailVerified": true,
+      "firstName": "Hung",
+      "lastName": "Chef",
+      "enabled": true,
+      "realmRoles": [
+        "chef"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${DEMO_USER_PASSWORD}",
+          "temporary": false
+        }
+      ]
     },
     {
-      "username": "driver-tuan", "email": "driver-tuan@metrace.test", "emailVerified": true, "firstName": "Tuan", "lastName": "Driver", "enabled": true,
-      "realmRoles": ["driver"],
-      "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
+      "username": "driver-tuan",
+      "email": "driver-tuan@metrace.test",
+      "emailVerified": true,
+      "firstName": "Tuan",
+      "lastName": "Driver",
+      "enabled": true,
+      "realmRoles": [
+        "driver"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${DEMO_USER_PASSWORD}",
+          "temporary": false
+        }
+      ]
     },
     {
-      "username": "cskh-thu", "email": "cskh-thu@metrace.test", "emailVerified": true, "firstName": "Thu", "lastName": "Customer Care", "enabled": true,
-      "realmRoles": ["cskh"],
-      "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
+      "username": "cskh-thu",
+      "email": "cskh-thu@metrace.test",
+      "emailVerified": true,
+      "firstName": "Thu",
+      "lastName": "Customer Care",
+      "enabled": true,
+      "realmRoles": [
+        "cskh"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${DEMO_USER_PASSWORD}",
+          "temporary": false
+        }
+      ]
     },
     {
-      "username": "director-nam", "email": "director-nam@metrace.test", "emailVerified": true, "firstName": "Nam", "lastName": "Director", "enabled": true,
-      "realmRoles": ["director"],
-      "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
+      "username": "director-nam",
+      "email": "director-nam@metrace.test",
+      "emailVerified": true,
+      "firstName": "Nam",
+      "lastName": "Director",
+      "enabled": true,
+      "realmRoles": [
+        "director"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${DEMO_USER_PASSWORD}",
+          "temporary": false
+        }
+      ]
     },
     {
-      "username": "truong-a", "email": "truong-a@metrace.test", "emailVerified": true, "firstName": "Truong A", "lastName": "Staff", "enabled": true,
-      "realmRoles": ["customer_staff"],
-      "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
+      "username": "truong-a",
+      "email": "truong-a@metrace.test",
+      "emailVerified": true,
+      "firstName": "Truong A",
+      "lastName": "Staff",
+      "enabled": true,
+      "realmRoles": [
+        "customer_staff"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${DEMO_USER_PASSWORD}",
+          "temporary": false
+        }
+      ]
     },
     {
-      "username": "truong-b", "email": "truong-b@metrace.test", "emailVerified": true, "firstName": "Truong B", "lastName": "Staff", "enabled": true,
-      "realmRoles": ["customer_staff"],
-      "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
+      "username": "truong-b",
+      "email": "truong-b@metrace.test",
+      "emailVerified": true,
+      "firstName": "Truong B",
+      "lastName": "Staff",
+      "enabled": true,
+      "realmRoles": [
+        "customer_staff"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${DEMO_USER_PASSWORD}",
+          "temporary": false
+        }
+      ]
     },
     {
-      "username": "truong-c", "email": "truong-c@metrace.test", "emailVerified": true, "firstName": "Truong C", "lastName": "Staff", "enabled": true,
-      "realmRoles": ["customer_staff"],
-      "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
+      "username": "truong-c",
+      "email": "truong-c@metrace.test",
+      "emailVerified": true,
+      "firstName": "Truong C",
+      "lastName": "Staff",
+      "enabled": true,
+      "realmRoles": [
+        "customer_staff"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${DEMO_USER_PASSWORD}",
+          "temporary": false
+        }
+      ]
     },
     {
-      "username": "nha-may-x", "email": "nha-may-x@metrace.test", "emailVerified": true, "firstName": "Nha may X", "lastName": "Staff", "enabled": true,
-      "realmRoles": ["customer_staff"],
-      "credentials": [{ "type": "password", "value": "${DEMO_USER_PASSWORD}", "temporary": false }]
+      "username": "nha-may-x",
+      "email": "nha-may-x@metrace.test",
+      "emailVerified": true,
+      "firstName": "Nha may X",
+      "lastName": "Staff",
+      "enabled": true,
+      "realmRoles": [
+        "customer_staff"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${DEMO_USER_PASSWORD}",
+          "temporary": false
+        }
+      ]
     }
   ],
   "organizations": [
     {
-      "name": "Truong A", "alias": "truong-a", "enabled": true,
-      "domains": [{ "name": "truong-a.metrace.test", "verified": false }],
-      "members": [{ "username": "truong-a", "membershipType": "UNMANAGED" }]
+      "name": "Truong A",
+      "alias": "truong-a",
+      "enabled": true,
+      "domains": [
+        {
+          "name": "truong-a.metrace.test",
+          "verified": false
+        }
+      ],
+      "members": [
+        {
+          "username": "truong-a",
+          "membershipType": "UNMANAGED"
+        }
+      ]
     },
     {
-      "name": "Truong B", "alias": "truong-b", "enabled": true,
-      "domains": [{ "name": "truong-b.metrace.test", "verified": false }],
-      "members": [{ "username": "truong-b", "membershipType": "UNMANAGED" }]
+      "name": "Truong B",
+      "alias": "truong-b",
+      "enabled": true,
+      "domains": [
+        {
+          "name": "truong-b.metrace.test",
+          "verified": false
+        }
+      ],
+      "members": [
+        {
+          "username": "truong-b",
+          "membershipType": "UNMANAGED"
+        }
+      ]
     },
     {
-      "name": "Truong C", "alias": "truong-c", "enabled": true,
-      "domains": [{ "name": "truong-c.metrace.test", "verified": false }],
-      "members": [{ "username": "truong-c", "membershipType": "UNMANAGED" }]
+      "name": "Truong C",
+      "alias": "truong-c",
+      "enabled": true,
+      "domains": [
+        {
+          "name": "truong-c.metrace.test",
+          "verified": false
+        }
+      ],
+      "members": [
+        {
+          "username": "truong-c",
+          "membershipType": "UNMANAGED"
+        }
+      ]
     },
     {
-      "name": "Nha may X", "alias": "nha-may-x", "enabled": true,
-      "domains": [{ "name": "nha-may-x.metrace.test", "verified": false }],
-      "members": [{ "username": "nha-may-x", "membershipType": "UNMANAGED" }]
+      "name": "Nha may X",
+      "alias": "nha-may-x",
+      "enabled": true,
+      "domains": [
+        {
+          "name": "nha-may-x.metrace.test",
+          "verified": false
+        }
+      ],
+      "members": [
+        {
+          "username": "nha-may-x",
+          "membershipType": "UNMANAGED"
+        }
+      ]
     }
   ]
 }

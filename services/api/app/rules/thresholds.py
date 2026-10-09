@@ -21,6 +21,8 @@ DEFAULTS: dict[str, Decimal] = {
     "sample_required_min_portions": Decimal("30"),
     "sample_retention_h": Decimal("24"),
     "cert_warn_days": Decimal("30"),
+    "coldchain_consecutive_n": Decimal("3"),
+    "coldchain_max_skew_s": Decimal("60"),
 }
 
 

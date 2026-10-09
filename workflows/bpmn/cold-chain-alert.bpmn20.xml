@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+SPDX-FileCopyrightText: The metrace Authors
+SPDX-License-Identifier: Apache-2.0
+
+Cold-chain alert: a fridge stayed outside its safe band for N readings. QA must
+check the fridge and the food in it; if nobody acts within checkSla the director
+is pulled in (the QA task stays open). Variables: assetCode, checkSla (ISO 8601).
+-->
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:flowable="http://flowable.org/bpmn"
+             targetNamespace="https://metrace.example/bpmn">
+  <process id="cold-chain-alert" name="Cold-chain alert" isExecutable="true">
+    <startEvent id="start"/>
+    <sequenceFlow id="toCheck" sourceRef="start" targetRef="qa_check_fridge"/>
+
+    <userTask id="qa_check_fridge" name="QA: check fridge and stored food" flowable:candidateGroups="qa"/>
+    <boundaryEvent id="checkSlaMissed" attachedToRef="qa_check_fridge" cancelActivity="false">
+      <timerEventDefinition>
+        <timeDuration>${checkSla}</timeDuration>
+      </timerEventDefinition>
+    </boundaryEvent>
+    <sequenceFlow id="toEscalation" sourceRef="checkSlaMissed" targetRef="director_escalation"/>
+    <userTask id="director_escalation" name="Director: fridge alert not handled" flowable:candidateGroups="director"/>
+    <sequenceFlow id="escalationDone" sourceRef="director_escalation" targetRef="escalationEnd"/>
+    <endEvent id="escalationEnd"/>
+
+    <sequenceFlow id="toEnd" sourceRef="qa_check_fridge" targetRef="end"/>
+    <endEvent id="end"/>
+  </process>
+</definitions>

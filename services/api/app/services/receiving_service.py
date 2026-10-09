@@ -71,7 +71,7 @@ def create_receiving(session: Session, principal: Principal, req: ReceivingIn) -
     receiving = Receiving(
         kitchen_id=kitchen.id,
         supplier_id=supplier.id,
-        code=f"RCV-{stamp}-{supplier.code}",
+        code=f"RCV-{stamp}-{supplier.code}-{secrets.token_hex(2).upper()}",
         received_at=now,
         received_by=principal.username,
         document_file_ids=list(req.document_file_ids),

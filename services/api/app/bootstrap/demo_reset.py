@@ -21,6 +21,8 @@ from app.workflow.flowable_client import FlowableClient, FlowableUnavailableErro
 log = logging.getLogger("demo-reset")
 
 TRANSACTIONAL_TABLES = [
+    "sensor_reading",
+    "coldchain_alert",
     "recall_notice",
     "incident_close_request",
     "lock",
@@ -60,6 +62,7 @@ def truncate() -> None:
     engine = create_engine(os.environ["MIGRATOR_DATABASE_URL"])
     with engine.begin() as conn:
         conn.execute(text(f"TRUNCATE {', '.join(TRANSACTIONAL_TABLES)} RESTART IDENTITY CASCADE"))
+        conn.execute(text("ALTER SEQUENCE incident_code_seq RESTART"))
     engine.dispose()
 
 

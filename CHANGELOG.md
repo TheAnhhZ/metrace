@@ -14,7 +14,7 @@ and the project uses [Semantic Versioning](https://semver.org/).
 ### Added
 - Repository skeleton: Apache-2.0, REUSE metadata, AUTHORS, CI (ruff, reuse lint, gitleaks, unit tests).
 - `make init` generates local secrets into `.env`; compose refuses to start without it.
-- Keycloak 26.8 image built from the upstream distribution on an OSI base, admin/account consoles disabled.
+- Keycloak 26.8 (official image) with admin/account consoles disabled at build time.
 - Realm `metrace`: roles, clients (web PKCE, CLI device flow, sensor client credentials), customer organizations.
 - APISIX standalone gateway: `/auth` allowlist, `/api` JWT verification (JWKS), per-token rate limits.
 - API: JWT re-verification, `GET /api/v1/whoami`.
@@ -64,6 +64,14 @@ and the project uses [Semantic Versioning](https://semver.org/).
 - Customer differences (school vs factory) are profile data, not code branches.
 - CLI `metrace` (device-flow login, staff only, `whoami`, `trace`, `shipments list`, `incidents list`);
   lineage accepts business codes as well as UUIDs.
+- Cold chain: sensor gateway machine identity may only report its own assets (claim), device clock
+  skew is rejected, N consecutive out-of-band readings open one alert per asset and start the
+  `cold-chain-alert` process (QA check, director escalation); alert shows lots and retained samples
+  in that fridge. `tools/sensor-simulator` (normal/drift/breach).
+- #6 audit verification: `GET /api/v1/audit/verify?anchor_seq=&anchor_hash=` and `GET /api/v1/audit/head`.
+
+### Fixed
+- Receiving and incident codes no longer collide under concurrent requests.
 
 ### Security
 - The CI-only `metrace-test` client only exists when `KC_OVERLAYS=test`; demos remove it.
