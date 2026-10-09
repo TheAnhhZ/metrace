@@ -27,7 +27,7 @@ services:
       - pgdata:/var/lib/postgresql/data
       - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d metrace"]
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d metrace"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -50,6 +50,7 @@ services:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_ADMIN_PASSWORD:?run make init}
       JAVA_OPTS_KC_HEAP: -Xms256m -Xmx512m
+      KC_DB_POOL_MAX_SIZE: "20"
       # Placeholders resolved by the realm import (no secret in git).
       METRACE_API_CLIENT_SECRET: ${METRACE_API_CLIENT_SECRET:?run make init}
       SENSOR_GATEWAY_CLIENT_SECRET: ${SENSOR_GATEWAY_CLIENT_SECRET:?run make init}
@@ -151,6 +152,21 @@ services:
     healthcheck:
       disable: true
 
+  # One-shot: synthetic demo data relative to now() (idempotent per day).
+  seed:
+    build: ./services/api
+    image: metrace/api:dev
+    command: ["python", "-m", "app.seed", "--scenario", "baseline"]
+    restart: "no"
+    environment:
+      <<: *app-env
+      MIGRATOR_DATABASE_URL: ""
+      FLOWABLE_PASSWORD: ""
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    healthcheck:
+      disable: true
+
   api:
     <<: *defaults
     build: ./services/api
@@ -158,10 +174,11 @@ services:
     environment:
       <<: *app-env
       MIGRATOR_DATABASE_URL: ""
+      FLOWABLE_PASSWORD: ""  # only the worker talks to Flowable
     depends_on:
       keycloak: { condition: service_healthy }
       kc-bootstrap: { condition: service_completed_successfully }
-      migrate: { condition: service_completed_successfully }
+      seed: { condition: service_completed_successfully }
     mem_limit: 256m
 
   # Outbox worker: the only component that calls Flowable.
@@ -213,10 +230,11 @@ services:
       - ./infra/apisix/apisix.yaml:/usr/local/apisix/conf/apisix.yaml:ro
     ports:
       - "127.0.0.1:9080:9080"
+    # restart: true => APISIX restarts when an upstream container is recreated (new IP).
     depends_on:
-      keycloak: { condition: service_healthy }
-      api: { condition: service_healthy }
-      web: { condition: service_healthy }
+      keycloak: { condition: service_healthy, restart: true }
+      api: { condition: service_healthy, restart: true }
+      web: { condition: service_healthy, restart: true }
     healthcheck:
       # No curl in the image: any HTTP answer on :9080 means nginx is serving.
       test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/9080 && printf 'GET / HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && head -n1 <&3 | grep -q HTTP/"]

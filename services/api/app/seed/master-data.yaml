@@ -1,0 +1,100 @@
+# SPDX-FileCopyrightText: The metrace Authors
+# SPDX-License-Identifier: Apache-2.0
+#
+# Synthetic master data (every name is fictional and tagged DEMO).
+# Upserted by code on every seed run; there is no API to edit master data.
+kitchen:
+  code: BEP-01
+  name: Bếp trung tâm DEMO
+
+customers:
+  - alias: truong-a
+    name: Trường Tiểu học DEMO A
+    kind: school
+    profile: { students: 300 }
+    portions: { lunch: 300 }
+    delivery_point: { code: DP-A, name: "Trường DEMO A - nhà ăn bán trú", address: "Số 1 Đường DEMO, Hà Nội" }
+  - alias: truong-b
+    name: Trường Tiểu học DEMO B
+    kind: school
+    profile: { students: 280 }
+    portions: { lunch: 280 }
+    delivery_point: { code: DP-B, name: "Trường DEMO B - nhà ăn bán trú", address: "Số 2 Đường DEMO, Hà Nội" }
+  - alias: truong-c
+    name: Trường THCS DEMO C
+    kind: school
+    profile: { students: 320 }
+    portions: { lunch: 320 }
+    delivery_point: { code: DP-C, name: "Trường DEMO C - nhà ăn", address: "Số 3 Đường DEMO, Hà Nội" }
+  - alias: nha-may-x
+    name: Nhà máy DEMO X
+    kind: factory
+    profile: { shifts: [lunch, dinner] }
+    portions: { lunch: 400, dinner: 200 }
+    delivery_point: { code: DP-X, name: "Nhà máy DEMO X - nhà ăn ca", address: "KCN DEMO, Hà Nội" }
+
+# expires_in_days is relative to the seed day: 10 => warning, -5 => expired (receiving blocked).
+suppliers:
+  - { code: NCC-01, name: Thịt sạch DEMO, cert: { number: GCN-DEMO-001, expires_in_days: 200 } }
+  - { code: NCC-02, name: Rau an toàn DEMO, cert: { number: GCN-DEMO-002, expires_in_days: 150 } }
+  - { code: NCC-03, name: Gia cầm DEMO, cert: { number: GCN-DEMO-003, expires_in_days: 90 } }
+  - { code: NCC-04, name: Thủy sản DEMO, cert: { number: GCN-DEMO-004, expires_in_days: 10 } }
+  - { code: NCC-05, name: Gạo DEMO, cert: { number: GCN-DEMO-005, expires_in_days: 300 } }
+  - { code: NCC-06, name: Gia vị DEMO, cert: { number: GCN-DEMO-006, expires_in_days: -5 } }
+
+# supplier: who delivers it; temp_c: measured at receiving (kept within limits).
+ingredients:
+  - { code: THIT-LON, name: Thịt lợn, category: meat, storage: chilled, supplier: NCC-01, temp_c: 2.5 }
+  - { code: XUONG-LON, name: Xương lợn, category: meat, storage: chilled, supplier: NCC-01, temp_c: 3.0 }
+  - { code: TRUNG-GA, name: Trứng gà, category: egg, storage: chilled, supplier: NCC-03, temp_c: 3.6 }
+  - { code: GA, name: Thịt gà, category: poultry, storage: chilled, supplier: NCC-03, temp_c: 2.0 }
+  - { code: CA-BASA, name: Cá basa phi lê, category: fish, storage: frozen, supplier: NCC-04, temp_c: -19.0 }
+  - { code: RAU-CAI, name: Rau cải, category: vegetable, storage: chilled, supplier: NCC-02, temp_c: 3.5 }
+  - { code: CA-CHUA, name: Cà chua, category: vegetable, storage: chilled, supplier: NCC-02, temp_c: 3.8 }
+  - { code: GAO, name: Gạo tẻ, category: grain, storage: dry, supplier: NCC-05, temp_c: null }
+
+# recipe: kg of each ingredient per portion; components: kg of an intermediate dish per portion.
+dishes:
+  # Intermediate: portions = kg of broth; recipe = kg of bones per kg of broth.
+  - { code: NUOC-DUNG, name: Nước dùng xương (bán thành phẩm), kind: liquid, portion_size_g: 0,
+      recipe: { XUONG-LON: 0.3 } }
+  - { code: COM, name: Cơm trắng, kind: solid, portion_size_g: 200, recipe: { GAO: 0.09 } }
+  - { code: THIT-KHO, name: Thịt kho trứng, kind: solid, portion_size_g: 120, recipe: { THIT-LON: 0.06, TRUNG-GA: 0.05 } }
+  - { code: CANH-RAU, name: Canh rau cải, kind: liquid, portion_size_g: 200, recipe: { RAU-CAI: 0.04 },
+      components: { NUOC-DUNG: 0.15 } }
+  - { code: GA-RANG, name: Gà rang gừng, kind: solid, portion_size_g: 120, recipe: { GA: 0.1 } }
+  - { code: CANH-CHUA, name: Canh chua cá, kind: liquid, portion_size_g: 200,
+      recipe: { CA-BASA: 0.04, CA-CHUA: 0.02 }, components: { NUOC-DUNG: 0.15 } }
+
+assets:
+  - { code: TU-MAT-01, type: fridge, name: Tủ mát nguyên liệu, min_c: 0, max_c: 5 }
+  - { code: TU-DONG-01, type: freezer, name: Tủ đông nguyên liệu, min_c: -25, max_c: -15 }
+  - { code: TU-MAU-01, type: fridge, name: Tủ lưu mẫu thức ăn, min_c: 0, max_c: 5 }
+  - { code: XE-01, type: truck, name: Xe giao hàng 01, min_c: null, max_c: null }
+  - { code: XE-02, type: truck, name: Xe giao hàng 02, min_c: null, max_c: null }
+
+# Meals served every day. customers: null = every customer.
+# Lots of these ingredients are bought once and used on consecutive days (shared lineage).
+multi_day_lots: [XUONG-LON, GAO]
+meal_plan:
+  lunch: { end: "12:30", customers: null, dishes: [COM, THIT-KHO, CANH-RAU] }
+  dinner: { end: "19:30", customers: [nha-may-x], dishes: [COM, GA-RANG, CANH-CHUA] }
+
+# Poka-yoke thresholds. basis_type: law | guidance | field | internal.
+thresholds:
+  - { code: receiving_chilled_max_c, value: 4, unit: "°C", basis_type: internal,
+      basis: "Ngưỡng nội bộ cho hàng mát khi nhận (chờ số liệu phỏng vấn)" }
+  - { code: receiving_frozen_max_c, value: -18, unit: "°C", basis_type: internal,
+      basis: "Ngưỡng nội bộ cho hàng đông khi nhận" }
+  - { code: core_temp_min_c, value: 75, unit: "°C", basis_type: internal, basis: "Nhiệt độ tâm tối thiểu khi nấu" }
+  - { code: dispatch_hold_max_min, value: 120, unit: "phút", basis_type: internal,
+      basis: "Thời gian giữ món tối đa từ khi nấu xong tới khi xuất xe" }
+  - { code: sample_min_solid_g, value: 100, unit: "g", basis_type: guidance,
+      basis: "QĐ 1246/QĐ-BYT: mẫu thức ăn đặc ≥100 g (chờ xác minh hiệu lực)" }
+  - { code: sample_min_liquid_ml, value: 150, unit: "ml", basis_type: guidance,
+      basis: "QĐ 1246/QĐ-BYT: mẫu thức ăn lỏng ≥150 ml (chờ xác minh hiệu lực)" }
+  - { code: sample_required_min_portions, value: 30, unit: "suất", basis_type: guidance,
+      basis: "QĐ 1246/QĐ-BYT: bữa ăn ≥30 suất phải lưu mẫu" }
+  - { code: sample_retention_h, value: 24, unit: "giờ", basis_type: guidance,
+      basis: "QĐ 1246/QĐ-BYT: lưu mẫu 24 giờ, tính từ max(lúc lưu, kết thúc bữa)" }
+  - { code: cert_warn_days, value: 30, unit: "ngày", basis_type: internal, basis: "Cảnh báo sớm GCN sắp hết hạn" }

@@ -28,3 +28,16 @@ and the project uses [Semantic Versioning](https://semver.org/).
 - File upload/download through the API only: magic-byte allow-list (JPEG, PNG, PDF), size cap,
   content-addressed storage, ownership per customer organization (other org gets 404).
 - `scripts/smoke-core.sh` and a compose-smoke CI workflow (every PR, nightly, fresh volumes).
+- Domain model (migrations 0002–0003): suppliers and certificates, receiving (Mẫu 1), lots, dishes,
+  menus, cooking batches (Mẫu 2) with lot or intermediate-batch inputs, portion checks (Mẫu 3),
+  retained samples, shipments, complaints, incidents, per-incident locks, four-eyes close requests,
+  recall notices, Poka-yoke thresholds with their basis.
+- `lineage_edge` view and `GET /api/v1/lineage/{type}/{id}?direction=forward|backward|both`
+  (recursive CTE, cycle guard, depth/node caps, `truncated` flag, lock state, portions per point).
+- Read-only master data endpoints (suppliers with certificate state, ingredients, dishes,
+  delivery points, assets, menus, thresholds).
+- One-shot `seed`: synthetic DEMO master data and two service days relative to now.
+- `docs/domain-model.md`, `make openapi`.
+
+### Security
+- The CI-only `metrace-test` client only exists when `KC_OVERLAYS=test`; demos remove it.

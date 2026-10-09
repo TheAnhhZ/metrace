@@ -13,3 +13,7 @@ ignore = [
 [lint.per-file-ignores]
 "**/tests/**" = ["S101", "S105", "S106"]
 "**/migrations/**" = ["E501"]
+
+[lint.flake8-bugbear]
+# FastAPI declares parameters through these calls in argument defaults.
+extend-immutable-calls = ["fastapi.Query", "fastapi.File", "fastapi.Depends", "fastapi.Form", "fastapi.Body"]

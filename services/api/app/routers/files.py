@@ -54,7 +54,7 @@ def _customer_org(principal: Principal, requested: str | None) -> str:
 
 
 @internal.post("", response_model=FileOut, status_code=201)
-def upload_company_file(session: DbSession, principal: CurrentPrincipal, file: UploadFile = File(...)) -> FileOut:  # noqa: B008
+def upload_company_file(session: DbSession, principal: CurrentPrincipal, file: UploadFile = File(...)) -> FileOut:
     return _out(file_service.store_upload(session, principal, file, owner_org_alias=None))
 
 
@@ -69,7 +69,7 @@ def download_any_file(file_id: uuid.UUID, session: DbSession, principal: Current
 def upload_customer_file(
     session: DbSession,
     principal: CurrentPrincipal,
-    file: UploadFile = File(...),  # noqa: B008
+    file: UploadFile = File(...),
     org: str | None = Query(default=None),
 ) -> FileOut:
     owner = _customer_org(principal, org)

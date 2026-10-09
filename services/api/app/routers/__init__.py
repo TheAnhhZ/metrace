@@ -5,10 +5,10 @@
 
 from fastapi import APIRouter
 
-from app.routers import files, health, whoami
+from app.routers import files, health, lineage, master_data_read, whoami
 
 # Open to any caller (health) or to any authenticated caller (whoami).
 PUBLIC_ROUTERS: list[APIRouter] = [health.router, whoami.router]
 
 # Role-gated routers. tests/unit/test_every_route_requires_role.py enforces this.
-GATED_ROUTERS: list[APIRouter] = [files.internal, files.portal]
+GATED_ROUTERS: list[APIRouter] = [files.internal, files.portal, lineage.router, master_data_read.router]
