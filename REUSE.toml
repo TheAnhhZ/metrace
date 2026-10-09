@@ -15,6 +15,7 @@ path = [
   "**/*.svg",
   "**/*.ico",
   "**/py.typed",
+  "**/.gitkeep",
   ".github/pull_request_template.md",
 ]
 precedence = "aggregate"

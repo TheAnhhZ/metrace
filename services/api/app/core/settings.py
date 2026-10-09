@@ -17,6 +17,21 @@ class Settings(BaseSettings):
     oidc_audience: str = "metrace-api"
     oidc_leeway_seconds: int = 30
 
+    # Runtime role (metrace_app) cannot UPDATE/DELETE the audit chain.
+    database_url: str = "postgresql+psycopg://metrace_app:metrace_app@localhost:5432/metrace"
+
+    # Object storage (SeaweedFS S3). Files are always streamed through the API.
+    s3_endpoint_url: str = "http://seaweedfs:8333"
+    s3_access_key: str = ""
+    s3_secret_key: str = ""
+    s3_bucket: str = "metrace-files"
+    upload_max_bytes: int = 10 * 1024 * 1024
+
+    # Workflow engine, called by the worker only.
+    flowable_url: str = "http://flowable:8080/flowable-rest"
+    flowable_user: str = "rest-admin"
+    flowable_password: str = ""
+
     # Business time zone: DB stores UTC, service dates are computed here.
     business_tz: str = "Asia/Ho_Chi_Minh"
 

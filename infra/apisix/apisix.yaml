@@ -2,8 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # Single public origin: http://localhost:9080
-#   /auth/*  -> Keycloak, ALLOWLIST only (admin, master, account => no route => 404)
+#   /auth/*  -> Keycloak, ALLOWLIST only (everything else under /auth => 404)
 #   /api/*   -> FastAPI, JWT verified here (JWKS) and again in the API
+#   /*       -> static web app
 upstreams:
   - id: keycloak
     type: roundrobin
@@ -13,6 +14,10 @@ upstreams:
     type: roundrobin
     nodes:
       "api:8000": 1
+  - id: web
+    type: roundrobin
+    nodes:
+      "web:80": 1
 
 routes:
   - id: auth-allowlist
@@ -28,6 +33,17 @@ routes:
     plugins:
       request-id:
         include_in_response: true
+
+  # Everything else under /auth is denied explicitly, so it never falls
+  # through to the SPA catch-all below.
+  - id: auth-deny
+    priority: 5
+    uri: /auth/*
+    plugins:
+      fault-injection:
+        abort:
+          http_status: 404
+          body: "Not Found\n"
 
   # Sensor readings get their own bucket so bursts never starve /api/*.
   - id: api-sensor-readings
@@ -69,4 +85,10 @@ routes:
         key: http_authorization
         rejected_code: 429
         policy: local
+
+  # Static web app (lowest priority catch-all).
+  - id: web
+    priority: -10
+    uri: /*
+    upstream_id: web
 #END

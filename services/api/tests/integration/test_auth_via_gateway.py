@@ -2,8 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 """Gateway + identity contract: one issuer, org claim, 401s, /auth allowlist, rate limits."""
 
-import os
-
 import httpx
 import pytest
 
@@ -86,14 +84,14 @@ def test_login_and_discovery_paths_are_allowed():
 
 
 def test_sensor_readings_route_has_its_own_rate_limit_bucket():
-    limit = int(os.environ.get("RATE_LIMIT_READINGS_PER_MIN", "0"))
-    if not 0 < limit <= 20:
-        pytest.skip("set RATE_LIMIT_READINGS_PER_MIN<=20 on the stack to exercise 429")
     token = sensor_token()
-    codes = [
-        httpx.post(f"{GATEWAY}/api/v1/assets/RL-TEST/readings", headers=auth(token)).status_code
-        for _ in range(limit + 1)
-    ]
+    url = f"{GATEWAY}/api/v1/assets/RL-TEST/readings"
+    first = httpx.post(url, headers=auth(token))
+    limit = int(first.headers["X-RateLimit-Limit"])
+    if limit > 20:
+        pytest.skip(f"readings limit is {limit}; start the stack with RATE_LIMIT_READINGS_PER_MIN<=20 to exercise 429")
+    remaining = int(first.headers["X-RateLimit-Remaining"])
+    codes = [httpx.post(url, headers=auth(token)).status_code for _ in range(remaining + 1)]
     assert codes[-1] == 429
     # The general /api bucket is untouched.
     assert httpx.get(f"{GATEWAY}/api/v1/whoami", headers=auth(token)).status_code == 200

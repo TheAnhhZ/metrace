@@ -15,7 +15,7 @@ Built on a headless open-source core (Tier 1): **Keycloak** (SSO),
 
 ## Status
 
-Early development (W0). See [CHANGELOG.md](CHANGELOG.md).
+Early development: core platform up (SSO, gateway, data, workflow, worker). See [CHANGELOG.md](CHANGELOG.md).
 
 ## Quick start
 
@@ -31,8 +31,15 @@ The single public origin is <http://localhost:9080> (bound to 127.0.0.1 only).
 
 | Path      | Service                                   |
 |-----------|-------------------------------------------|
-| `/auth/*` | Keycloak, login/token endpoints only      |
-| `/api/*`  | metrace API (JWT required)                |
+| `/auth/*` | Keycloak, login/token/device endpoints only |
+| `/api/*`  | metrace API (JWT required, default deny)  |
+| `/*`      | Web app                                   |
+
+`docker compose up` runs three one-shot jobs before the API starts:
+`migrate` (database schema + S3 bucket), `kc-bootstrap` (organizations,
+memberships, overlays) and, later, `seed` (demo data). All are idempotent.
+
+Check a running stack with `scripts/smoke-core.sh`.
 
 Demo accounts (password is `DEMO_USER_PASSWORD` in your `.env`):
 `qa-lan`, `approver-ha`, `procurement-mai`, `chef-hung`, `driver-tuan`,

@@ -16,7 +16,7 @@ from app.workflow.flowable_client import FlowableClient
 
 pytestmark = pytest.mark.integration
 
-BPMN = Path(__file__).parents[4] / "workflows" / "bpmn" / "spike-timer-escalation.bpmn20.xml"
+BPMN = Path(__file__).parents[1] / "fixtures" / "spike-timer-escalation.bpmn20.xml"
 PROCESS_KEY = "spike-timer-escalation"
 TOPIC = "metrace-spike"
 WORKER = "pytest-worker"
