@@ -48,7 +48,9 @@ in builds (for example `caniuse-lite`, kept out of the web build on purpose:
 - `scripts/generate-license-inventory.sh` rebuilds
   [license-declaration.md](license-declaration.md) and `license-declaration.csv`
   from the lock files and **fails** when a dependency is outside the allow-list.
-  CI runs it on every pull request.
+  CI runs it on every pull request. npm packages come from `package-lock.json`,
+  not from the installed tree, so the result is the same on every OS; native
+  builds per OS/CPU are listed individually.
 - New dependencies are mentioned in the pull request description.
 - Dev tools that are run but never shipped (for example `reuse`, GPL-3.0) are
   not dependencies of metrace.

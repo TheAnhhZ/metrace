@@ -3,24 +3,96 @@ Noto Sans,2022,font,reference (not in repo),OFL-1.1,yes,https://github.com/notof
 Qwen3-4B weights (optional),qwen3:4b,model,reference (not in repo),Apache-2.0,yes,https://huggingface.co/Qwen/Qwen3-4B,runtime
 @babel/code-frame,7.29.7,npm,dev (build only),MIT,yes,https://www.npmjs.com/package/@babel/code-frame,apps/web
 @babel/helper-validator-identifier,7.29.7,npm,dev (build only),MIT,yes,https://www.npmjs.com/package/@babel/helper-validator-identifier,apps/web
-@esbuild/darwin-arm64,0.28.2,npm,dev (build only),MIT,yes,https://www.npmjs.com/package/@esbuild/darwin-arm64,apps/web
+@esbuild/aix-ppc64,0.28.2,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@esbuild/aix-ppc64,apps/web
+@esbuild/android-arm,0.28.2,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@esbuild/android-arm,apps/web
+@esbuild/android-arm64,0.28.2,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@esbuild/android-arm64,apps/web
+@esbuild/android-x64,0.28.2,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@esbuild/android-x64,apps/web
+@esbuild/darwin-arm64,0.28.2,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@esbuild/darwin-arm64,apps/web
+@esbuild/darwin-x64,0.28.2,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@esbuild/darwin-x64,apps/web
+@esbuild/freebsd-arm64,0.28.2,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@esbuild/freebsd-arm64,apps/web
+@esbuild/freebsd-x64,0.28.2,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@esbuild/freebsd-x64,apps/web
+@esbuild/linux-arm,0.28.2,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@esbuild/linux-arm,apps/web
+@esbuild/linux-arm64,0.28.2,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@esbuild/linux-arm64,apps/web
+@esbuild/linux-ia32,0.28.2,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@esbuild/linux-ia32,apps/web
+@esbuild/linux-loong64,0.28.2,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@esbuild/linux-loong64,apps/web
+@esbuild/linux-mips64el,0.28.2,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@esbuild/linux-mips64el,apps/web
+@esbuild/linux-ppc64,0.28.2,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@esbuild/linux-ppc64,apps/web
+@esbuild/linux-riscv64,0.28.2,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@esbuild/linux-riscv64,apps/web
+@esbuild/linux-s390x,0.28.2,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@esbuild/linux-s390x,apps/web
+@esbuild/linux-x64,0.28.2,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@esbuild/linux-x64,apps/web
+@esbuild/netbsd-arm64,0.28.2,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@esbuild/netbsd-arm64,apps/web
+@esbuild/netbsd-x64,0.28.2,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@esbuild/netbsd-x64,apps/web
+@esbuild/openbsd-arm64,0.28.2,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@esbuild/openbsd-arm64,apps/web
+@esbuild/openbsd-x64,0.28.2,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@esbuild/openbsd-x64,apps/web
+@esbuild/openharmony-arm64,0.28.2,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@esbuild/openharmony-arm64,apps/web
+@esbuild/sunos-x64,0.28.2,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@esbuild/sunos-x64,apps/web
+@esbuild/win32-arm64,0.28.2,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@esbuild/win32-arm64,apps/web
+@esbuild/win32-ia32,0.28.2,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@esbuild/win32-ia32,apps/web
+@esbuild/win32-x64,0.28.2,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@esbuild/win32-x64,apps/web
 @jridgewell/gen-mapping,0.3.13,npm,dev (build only),MIT,yes,https://www.npmjs.com/package/@jridgewell/gen-mapping,apps/web
 @jridgewell/remapping,2.3.5,npm,dev (build only),MIT,yes,https://www.npmjs.com/package/@jridgewell/remapping,apps/web
 @jridgewell/resolve-uri,3.1.2,npm,dev (build only),MIT,yes,https://www.npmjs.com/package/@jridgewell/resolve-uri,apps/web
 @jridgewell/sourcemap-codec,1.6.0,npm,dev (build only),MIT,yes,https://www.npmjs.com/package/@jridgewell/sourcemap-codec,apps/web
 @jridgewell/trace-mapping,0.3.31,npm,dev (build only),MIT,yes,https://www.npmjs.com/package/@jridgewell/trace-mapping,apps/web
+@napi-rs/lzma-linux-x64-gnu,1.5.1,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@napi-rs/lzma-linux-x64-gnu,apps/web
 @redocly/ajv,8.11.2,npm,dev (build only),MIT,yes,https://www.npmjs.com/package/@redocly/ajv,apps/web
 @redocly/config,0.22.0,npm,dev (build only),MIT,yes,https://www.npmjs.com/package/@redocly/config,apps/web
 @redocly/openapi-core,1.34.20,npm,dev (build only),MIT,yes,https://www.npmjs.com/package/@redocly/openapi-core,apps/web
 @rolldown/pluginutils,1.0.1,npm,dev (build only),MIT,yes,https://www.npmjs.com/package/@rolldown/pluginutils,apps/web
-@rollup/rollup-darwin-arm64,4.64.3,npm,dev (build only),MIT,yes,https://www.npmjs.com/package/@rollup/rollup-darwin-arm64,apps/web
+@rollup/rollup-android-arm-eabi,4.64.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@rollup/rollup-android-arm-eabi,apps/web
+@rollup/rollup-android-arm64,4.64.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@rollup/rollup-android-arm64,apps/web
+@rollup/rollup-darwin-arm64,4.64.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@rollup/rollup-darwin-arm64,apps/web
+@rollup/rollup-darwin-x64,4.64.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@rollup/rollup-darwin-x64,apps/web
+@rollup/rollup-freebsd-arm64,4.64.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@rollup/rollup-freebsd-arm64,apps/web
+@rollup/rollup-freebsd-x64,4.64.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@rollup/rollup-freebsd-x64,apps/web
+@rollup/rollup-linux-arm-gnueabihf,4.64.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@rollup/rollup-linux-arm-gnueabihf,apps/web
+@rollup/rollup-linux-arm-musleabihf,4.64.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@rollup/rollup-linux-arm-musleabihf,apps/web
+@rollup/rollup-linux-arm64-gnu,4.64.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@rollup/rollup-linux-arm64-gnu,apps/web
+@rollup/rollup-linux-arm64-musl,4.64.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@rollup/rollup-linux-arm64-musl,apps/web
+@rollup/rollup-linux-loong64-gnu,4.64.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@rollup/rollup-linux-loong64-gnu,apps/web
+@rollup/rollup-linux-loong64-musl,4.64.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@rollup/rollup-linux-loong64-musl,apps/web
+@rollup/rollup-linux-ppc64-gnu,4.64.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@rollup/rollup-linux-ppc64-gnu,apps/web
+@rollup/rollup-linux-ppc64-musl,4.64.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@rollup/rollup-linux-ppc64-musl,apps/web
+@rollup/rollup-linux-riscv64-gnu,4.64.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@rollup/rollup-linux-riscv64-gnu,apps/web
+@rollup/rollup-linux-riscv64-musl,4.64.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@rollup/rollup-linux-riscv64-musl,apps/web
+@rollup/rollup-linux-s390x-gnu,4.64.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@rollup/rollup-linux-s390x-gnu,apps/web
+@rollup/rollup-linux-x64-gnu,4.64.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@rollup/rollup-linux-x64-gnu,apps/web
+@rollup/rollup-linux-x64-musl,4.64.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@rollup/rollup-linux-x64-musl,apps/web
+@rollup/rollup-openbsd-x64,4.64.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@rollup/rollup-openbsd-x64,apps/web
+@rollup/rollup-openharmony-arm64,4.64.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@rollup/rollup-openharmony-arm64,apps/web
+@rollup/rollup-win32-arm64-msvc,4.64.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@rollup/rollup-win32-arm64-msvc,apps/web
+@rollup/rollup-win32-ia32-msvc,4.64.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@rollup/rollup-win32-ia32-msvc,apps/web
+@rollup/rollup-win32-x64-gnu,4.64.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@rollup/rollup-win32-x64-gnu,apps/web
+@rollup/rollup-win32-x64-msvc,4.64.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@rollup/rollup-win32-x64-msvc,apps/web
 @swc/core,1.16.13,npm,dev (build only),Apache-2.0,yes,https://www.npmjs.com/package/@swc/core,apps/web
-@swc/core-darwin-arm64,1.16.13,npm,dev (build only),Apache-2.0 AND MIT,yes,https://www.npmjs.com/package/@swc/core-darwin-arm64,apps/web
+@swc/core-darwin-arm64,1.16.13,npm,"dev (build only), per OS/CPU",Apache-2.0 AND MIT,yes,https://www.npmjs.com/package/@swc/core-darwin-arm64,apps/web
+@swc/core-darwin-x64,1.16.13,npm,"dev (build only), per OS/CPU",Apache-2.0 AND MIT,yes,https://www.npmjs.com/package/@swc/core-darwin-x64,apps/web
+@swc/core-linux-arm-gnueabihf,1.16.13,npm,"dev (build only), per OS/CPU",Apache-2.0,yes,https://www.npmjs.com/package/@swc/core-linux-arm-gnueabihf,apps/web
+@swc/core-linux-arm64-gnu,1.16.13,npm,"dev (build only), per OS/CPU",Apache-2.0 AND MIT,yes,https://www.npmjs.com/package/@swc/core-linux-arm64-gnu,apps/web
+@swc/core-linux-arm64-musl,1.16.13,npm,"dev (build only), per OS/CPU",Apache-2.0 AND MIT,yes,https://www.npmjs.com/package/@swc/core-linux-arm64-musl,apps/web
+@swc/core-linux-ppc64-gnu,1.16.13,npm,"dev (build only), per OS/CPU",Apache-2.0 AND MIT,yes,https://www.npmjs.com/package/@swc/core-linux-ppc64-gnu,apps/web
+@swc/core-linux-s390x-gnu,1.16.13,npm,"dev (build only), per OS/CPU",Apache-2.0 AND MIT,yes,https://www.npmjs.com/package/@swc/core-linux-s390x-gnu,apps/web
+@swc/core-linux-x64-gnu,1.16.13,npm,"dev (build only), per OS/CPU",Apache-2.0 AND MIT,yes,https://www.npmjs.com/package/@swc/core-linux-x64-gnu,apps/web
+@swc/core-linux-x64-musl,1.16.13,npm,"dev (build only), per OS/CPU",Apache-2.0 AND MIT,yes,https://www.npmjs.com/package/@swc/core-linux-x64-musl,apps/web
+@swc/core-win32-arm64-msvc,1.16.13,npm,"dev (build only), per OS/CPU",Apache-2.0 AND MIT,yes,https://www.npmjs.com/package/@swc/core-win32-arm64-msvc,apps/web
+@swc/core-win32-ia32-msvc,1.16.13,npm,"dev (build only), per OS/CPU",Apache-2.0 AND MIT,yes,https://www.npmjs.com/package/@swc/core-win32-ia32-msvc,apps/web
+@swc/core-win32-x64-msvc,1.16.13,npm,"dev (build only), per OS/CPU",Apache-2.0 AND MIT,yes,https://www.npmjs.com/package/@swc/core-win32-x64-msvc,apps/web
 @swc/counter,0.1.3,npm,dev (build only),Apache-2.0,yes,https://www.npmjs.com/package/@swc/counter,apps/web
 @swc/types,0.1.28,npm,dev (build only),Apache-2.0,yes,https://www.npmjs.com/package/@swc/types,apps/web
 @tailwindcss/node,4.3.3,npm,dev (build only),MIT,yes,https://www.npmjs.com/package/@tailwindcss/node,apps/web
 @tailwindcss/oxide,4.3.3,npm,dev (build only),MIT,yes,https://www.npmjs.com/package/@tailwindcss/oxide,apps/web
-@tailwindcss/oxide-darwin-arm64,4.3.3,npm,dev (build only),MIT,yes,https://www.npmjs.com/package/@tailwindcss/oxide-darwin-arm64,apps/web
+@tailwindcss/oxide-android-arm64,4.3.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@tailwindcss/oxide-android-arm64,apps/web
+@tailwindcss/oxide-darwin-arm64,4.3.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@tailwindcss/oxide-darwin-arm64,apps/web
+@tailwindcss/oxide-darwin-x64,4.3.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@tailwindcss/oxide-darwin-x64,apps/web
+@tailwindcss/oxide-freebsd-x64,4.3.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@tailwindcss/oxide-freebsd-x64,apps/web
+@tailwindcss/oxide-linux-arm-gnueabihf,4.3.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@tailwindcss/oxide-linux-arm-gnueabihf,apps/web
+@tailwindcss/oxide-linux-arm64-gnu,4.3.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@tailwindcss/oxide-linux-arm64-gnu,apps/web
+@tailwindcss/oxide-linux-arm64-musl,4.3.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@tailwindcss/oxide-linux-arm64-musl,apps/web
+@tailwindcss/oxide-linux-x64-gnu,4.3.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@tailwindcss/oxide-linux-x64-gnu,apps/web
+@tailwindcss/oxide-linux-x64-musl,4.3.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@tailwindcss/oxide-linux-x64-musl,apps/web
+@tailwindcss/oxide-wasm32-wasi,4.3.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@tailwindcss/oxide-wasm32-wasi,apps/web
+@tailwindcss/oxide-win32-arm64-msvc,4.3.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@tailwindcss/oxide-win32-arm64-msvc,apps/web
+@tailwindcss/oxide-win32-x64-msvc,4.3.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/@tailwindcss/oxide-win32-x64-msvc,apps/web
 @tailwindcss/vite,4.3.3,npm,dev (build only),MIT,yes,https://www.npmjs.com/package/@tailwindcss/vite,apps/web
 @tanstack/query-core,5.104.1,npm,runtime,MIT,yes,https://www.npmjs.com/package/@tanstack/query-core,apps/web
 @tanstack/react-query,5.104.1,npm,runtime,MIT,yes,https://www.npmjs.com/package/@tanstack/react-query,apps/web
@@ -54,7 +126,7 @@ estree-walker,3.0.3,npm,dev (build only),MIT,yes,https://www.npmjs.com/package/e
 expect-type,1.4.0,npm,dev (build only),Apache-2.0,yes,https://www.npmjs.com/package/expect-type,apps/web
 fast-deep-equal,3.1.3,npm,dev (build only),MIT,yes,https://www.npmjs.com/package/fast-deep-equal,apps/web
 fdir,6.5.0,npm,dev (build only),MIT,yes,https://www.npmjs.com/package/fdir,apps/web
-fsevents,2.3.3,npm,dev (build only),MIT,yes,https://www.npmjs.com/package/fsevents,apps/web
+fsevents,2.3.3,npm,"dev (build only), per OS/CPU",MIT,yes,https://www.npmjs.com/package/fsevents,apps/web
 graceful-fs,4.2.11,npm,dev (build only),ISC,yes,https://www.npmjs.com/package/graceful-fs,apps/web
 https-proxy-agent,7.0.6,npm,dev (build only),MIT,yes,https://www.npmjs.com/package/https-proxy-agent,apps/web
 index-to-position,1.2.0,npm,dev (build only),MIT,yes,https://www.npmjs.com/package/index-to-position,apps/web
@@ -65,7 +137,17 @@ js-yaml,4.3.2,npm,dev (build only),MIT,yes,https://www.npmjs.com/package/js-yaml
 json-schema-traverse,1.0.0,npm,dev (build only),MIT,yes,https://www.npmjs.com/package/json-schema-traverse,apps/web
 keycloak-js,26.2.4,npm,runtime,Apache-2.0,yes,https://www.npmjs.com/package/keycloak-js,apps/web
 lightningcss,1.32.0,npm,dev (build only),MPL-2.0,yes,https://www.npmjs.com/package/lightningcss,apps/web
-lightningcss-darwin-arm64,1.32.0,npm,dev (build only),MPL-2.0,yes,https://www.npmjs.com/package/lightningcss-darwin-arm64,apps/web
+lightningcss-android-arm64,1.32.0,npm,"dev (build only), per OS/CPU",MPL-2.0,yes,https://www.npmjs.com/package/lightningcss-android-arm64,apps/web
+lightningcss-darwin-arm64,1.32.0,npm,"dev (build only), per OS/CPU",MPL-2.0,yes,https://www.npmjs.com/package/lightningcss-darwin-arm64,apps/web
+lightningcss-darwin-x64,1.32.0,npm,"dev (build only), per OS/CPU",MPL-2.0,yes,https://www.npmjs.com/package/lightningcss-darwin-x64,apps/web
+lightningcss-freebsd-x64,1.32.0,npm,"dev (build only), per OS/CPU",MPL-2.0,yes,https://www.npmjs.com/package/lightningcss-freebsd-x64,apps/web
+lightningcss-linux-arm-gnueabihf,1.32.0,npm,"dev (build only), per OS/CPU",MPL-2.0,yes,https://www.npmjs.com/package/lightningcss-linux-arm-gnueabihf,apps/web
+lightningcss-linux-arm64-gnu,1.32.0,npm,"dev (build only), per OS/CPU",MPL-2.0,yes,https://www.npmjs.com/package/lightningcss-linux-arm64-gnu,apps/web
+lightningcss-linux-arm64-musl,1.32.0,npm,"dev (build only), per OS/CPU",MPL-2.0,yes,https://www.npmjs.com/package/lightningcss-linux-arm64-musl,apps/web
+lightningcss-linux-x64-gnu,1.32.0,npm,"dev (build only), per OS/CPU",MPL-2.0,yes,https://www.npmjs.com/package/lightningcss-linux-x64-gnu,apps/web
+lightningcss-linux-x64-musl,1.32.0,npm,"dev (build only), per OS/CPU",MPL-2.0,yes,https://www.npmjs.com/package/lightningcss-linux-x64-musl,apps/web
+lightningcss-win32-arm64-msvc,1.32.0,npm,"dev (build only), per OS/CPU",MPL-2.0,yes,https://www.npmjs.com/package/lightningcss-win32-arm64-msvc,apps/web
+lightningcss-win32-x64-msvc,1.32.0,npm,"dev (build only), per OS/CPU",MPL-2.0,yes,https://www.npmjs.com/package/lightningcss-win32-x64-msvc,apps/web
 magic-string,1.4.3,npm,dev (build only),MIT,yes,https://www.npmjs.com/package/magic-string,apps/web
 magic-string,0.30.21,npm,dev (build only),MIT,yes,https://www.npmjs.com/package/magic-string,apps/web
 minimatch,5.1.9,npm,dev (build only),ISC,yes,https://www.npmjs.com/package/minimatch,apps/web

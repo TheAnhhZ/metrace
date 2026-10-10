@@ -3,7 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # Regenerate docs/license-declaration.{md,csv} and fail on licenses outside the allow-list.
-# Needs: uv, npm (after `npm ci`). Tools used: pip-licenses (MIT), npm ls.
+# Needs: uv and python3. Tools used: pip-licenses (MIT). npm packages are read
+# from package-lock.json, so the result is the same on every OS/CPU.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 work=$(mktemp -d)
@@ -17,12 +18,4 @@ for project in services/api cli tools/sensor-simulator; do
     | sed -nE 's/^([A-Za-z0-9_.-]+)(\[.*\])?==.*/\1/p' | tr '_' '-' > "$work/$name.runtime.txt"
 done
 
-npm ls --omit=dev --all --json 2>/dev/null \
-  | python3 -c 'import json,sys
-def walk(d, out):
-    for name, dep in (d.get("dependencies") or {}).items():
-        out.add(name); walk(dep, out)
-    return out
-print(json.dumps(sorted(walk(json.load(sys.stdin), set()))))' > "$work/npm-runtime.json"
-
-python3 scripts/license_inventory.py "$work" "$work/npm-runtime.json"
+python3 scripts/license_inventory.py "$work"

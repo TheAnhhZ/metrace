@@ -29,6 +29,8 @@ jobs:
           curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz \
             | tar -xz gitleaks
           ./gitleaks git --config .gitleaks.toml --redact --verbose .
+      - name: make init writes a valid .env (clean-machine path)
+        run: scripts/check-dev-secrets.sh
 
   unit-tests:
     runs-on: ubuntu-24.04
@@ -68,11 +70,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: astral-sh/setup-uv@v7
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
+      # npm packages are read from package-lock.json: no install needed, same result on every OS.
       - name: license inventory (fails outside the allow-list)
         run: scripts/generate-license-inventory.sh
       - name: declaration is up to date
